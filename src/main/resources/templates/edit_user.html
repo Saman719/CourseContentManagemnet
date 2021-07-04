@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Edit User</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<div class="container text-center">
+    <div id="search-div">
+    <label id="email-change-label">email :
+        <input type="text" name="family-name" id="email-change"/>
+    </label> <br/><br/>
+    <button onclick="buttonGetClick()" id="email-change-button">Submit</button>
+    <br/><br/>
+    <div class="border-bottom "></div>
+    <br/><br/>
+    </div>
+    <label> email :
+        <input type="text" name="email" id="email"/>
+    </label> <br/><br/>
+    <label> password :
+        <input type="text" name="pass" id="pass"/>
+    </label> <br/><br/>
+    <label>name :
+        <input type="text" name="name" id="name"/>
+    </label> <br/><br/>
+    <label>family name :
+        <input type="text" name="family-name" id="family-name"/>
+    </label> <br/><br/>
+        <button onclick="buttonChange()">Change</button>
+</div>
+<script>
+
+    var response = httpGet('profile')
+    response = JSON.parse(response)
+    if(response.role !== 'ROLE_ANONYMOUS') {
+        document.getElementById('email').value = response.email;
+        document.getElementById('pass').value = response.password;
+        document.getElementById('name').value = response.name;
+        document.getElementById('family-name').value = response.familyName;
+    }
+    if(response.role !== 'ROLE_PROF') {
+        document.getElementById("search-div").remove()
+    }
+
+    var user = response
+    function buttonGetClick() {
+        var emailChange = document.getElementById('email-change').value;
+        user = httpGet(emailChange)
+        if(user === ""){
+            alert("User not Found!")
+        }else {
+            user = JSON.parse(user)
+        }
+        document.getElementById('email').value = user.email;
+        document.getElementById('pass').value = user.password;
+        document.getElementById('name').value = user.name;
+        document.getElementById('family-name').value = user.familyName;
+    }
+
+    function buttonChange() {
+        user.email = document.getElementById('email').value
+        user.password = document.getElementById('pass').value
+        user.name = document.getElementById('name').value
+        user.familyName = document.getElementById('family-name').value
+        var status = httpPut('edit',JSON.stringify(user))
+        if(status === 200) {
+            document.body.innerHTML += '<div class="text-center"><h1>Successfully Changed!</h1></div>'
+        }else {
+            document.body.innerHTML += '<div class="text-center"><h1>An error has occurred</h1></div>'
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+@PostMapping("/homework/save")
+    public void uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("date")
+    @DateTimeFormat(pattern="yyyy-MM-dd") Date date, @RequestParam("description") String description) {
+        CourseContent courseContent = new CourseContent();
+        String url = fileService.uploadFile(file);
+        String name = file.getOriginalFilename();
+        courseContent.setName(name);
+        courseContent.setDescription(description);
+        courseContent.setExpirationDate(date);
+        courseContent.setUrl(url);
+        homeworkService.addHomework(courseContent);
+    }

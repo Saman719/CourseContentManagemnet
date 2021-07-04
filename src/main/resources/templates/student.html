@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-xl navbar-dark bg-dark pmd-navbar pmd-z-depth fixed-top">
+    <a class="navbar-brand" href="#">Navbar</a>
+    <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
+        <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
+            <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
+            <div class="media-body">
+                Hello
+            </div>
+            <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <a class="dropdown-item" href="user/edit">Edit Profile</a>
+            <a class="dropdown-item" href="/logout">Logout</a>
+        </ul>
+    </div>
+</nav>
+
+<script>
+    var response = httpGet("/user/profile");
+    response = JSON.parse(response)
+    document.getElementById('prof-name').innerHTML = response.name
+</script>
+</body>
+</html>

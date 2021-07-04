@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<h1>This is Home!</h1>
+
+<script>
+    var response = httpGet("/user/profile");
+    response = JSON.parse(response)
+    console.log(response);
+    if(response.role === "ROLE_PROF" || response.role === "ROLE_TA") {
+        window.open("/prof","_self")
+    } else if (response.role === "ROLE_STU") {
+        window.open("/student","_self")
+    }
+</script>
+</body>
+</html>

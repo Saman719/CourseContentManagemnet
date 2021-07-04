@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<button onclick="showAll()">Click Me!</button>
+<script>
+
+  const url = 'course-content/all'
+  function showAll(){
+    var json = httpGet(url);
+    json = JSON.parse(json);
+      console.log(name);
+      for(var i = 0 ; i < json.length ; i++) {
+          var name = "\'"+ json[i].name +"\'";
+          console.log(name);
+          document.body.innerHTML += '<div> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+    }
+      console.log(document.body.innerHTML);
+  }
+
+  function aTagClick(name) {
+      console.log(name)
+      console.log(httpGet('course-content/download/' + name));
+      alert("Successfully Downloaded!!!!!!")
+  }
+
+  function httpGet(url)
+  {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", url, false ); // false for synchronous request
+    xmlHttp.send( null );
+    return xmlHttp.responseText;
+  }
+</script>
+</body>
+</html>

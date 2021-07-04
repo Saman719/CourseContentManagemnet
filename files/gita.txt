@@ -1,0 +1,4840 @@
+// p2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "iostream"
+#include "conio.h"
+#include "string"
+#include "vector"
+#include "map"
+#include "fstream"
+using namespace std;
+class sameexeption {
+public:
+	sameexeption(string massage) :massage(massage) {};
+	const string getmassage() { return massage; }
+	void setmassage(string massage) { massage = massage; }
+private:
+	string massage;
+};//رسیدگی به خطاهایی که کاربر اطلاعات تکراری وارد می کند
+class notfoundexption {
+public:
+	notfoundexption(string massage) :massage(massage) {};
+	const string getmassage() { return massage; }
+	void setmassage(string massage) { massage = massage; }
+private:
+	string massage;
+};//رسیدگی به خاطاهایی که کاربر اطلاعات مورد نظر خود را پیدا نمی کند
+class errorname {
+public:
+	errorname(string massage) :massage(massage) {};
+	const string getmassage() { return massage; }
+	void setmassage(string massage) { massage = massage; }
+private:
+	string massage;
+};
+class wrongdate {
+public:
+	wrongdate(string massage) :massage(massage) {};
+	const string getmassage() { return massage; }
+	void setmassage(string massage) { massage = massage; }
+private:
+	string massage;
+};//رسیدگی به خطاهایی که کاربر تاریخ های اشتباه وارد می کند
+class library {
+	
+	
+private:
+
+	int id, pagenumber;
+	string title;
+public:
+	library() {};
+	library(int i, string t, int pn) :id(i), pagenumber(pn), title(t) {};
+	const int getid() { return id; }
+	const int getpagenumber() { return pagenumber; }
+	const string gettitle() { return title; }
+	void setid(int ids) { id = ids; }
+	void setpagenumber(int pagenumbers) { pagenumber = pagenumbers; }
+	void settitle(string titles) { title = titles; }
+	virtual void add() {};
+	virtual void edit() {};
+	virtual void deleteinformation() {};
+	virtual void report() {};
+	virtual void search() {};
+
+};//کلاس کتابخانه که شامل فیلد های عنوان و ای دی و تعداد صفحات مربوط به نوشتار ها است  
+class book :public library {
+	
+private:
+	string type;
+	int ghabelbardasht, number;
+public:
+	book() {};
+	book(int i, string t, int pn, string ty, int num, int ghabel) :library(i, t, pn), type(ty), number(num), ghabelbardasht(ghabel) {};
+	const int getghabelbardasht() { return ghabelbardasht; }
+	const int getnumber() { return number; }
+	const string gettype() { return  type; }
+	void setghabelbardasht(int ghabelbardashts) { ghabelbardasht = ghabelbardashts; }
+	void settype(string  types) { type = types; }
+	void setnumber(int numbers) { number = numbers; }
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	void bookreload();
+};//کلاس بوک که شامل فیلدهای نوع یا دسته بندی کتاب و تعداد کتاب هاب قابل برداشت و تعداد کتاب ها است
+vector<book>bookuni;//بردار بوک یونی که برای و ذخیره ی اطلاعات مربوط به کتاب ها استفاده می شود 
+void book::bookreload() {
+	
+	int id,  pagenumber=0,number,ghabelbardasht;
+	string title, type;
+	ifstream reloadbook("bookuni.txt");
+	if (!reloadbook) {
+		cout << "not opened" << endl;
+	}
+	book c;
+	while(reloadbook>>id){
+		c.setid(id);
+		reloadbook >> title;
+		c.settitle(title);
+		reloadbook >> type;
+		c.settype(type);
+		reloadbook >> pagenumber;
+		c.setpagenumber(pagenumber);
+		reloadbook >> number;
+		c.setnumber(number);
+		reloadbook >> ghabelbardasht;
+		c.setghabelbardasht(ghabelbardasht);
+		
+		bookuni.push_back(c);
+	}
+	reloadbook.close();
+}
+
+void book::add()
+{
+
+	int id, checkadd = 1, pagenumber, newid, number;
+
+	//از خط 91 الی خط118 این عملیات صورت می گیرد که اگر کاربر خواست به اشتباه هنگام وارد کردن ای دی کتاب جدید ای دی کتاب قدیمی را وارد کند با استفاده از مدیریت استثنا جلوگیری شود
+	for (int s = 0; s < 10; s++) {//کاربر تا 10 بار شانس وارد کردن ای دی درست را دارد
+		try {
+			cout << "enter ID of book:" << endl;
+			cin >> newid;
+			//در اولین خونه از بردار موردی برای چک کردن وجود ندارد بنابراین مستقیما اطلاعات واردی داخل بردار ریخته می شود
+			if (bookuni.size() == 0) {
+				id = newid;
+			}
+
+			for (int i = 0; i < bookuni.size(); i++) {//چک کردن خونه های بردار برای بررسی وجود یا عدم وجود ای دی های تکراری
+
+				if (newid == bookuni[i].getid()) {
+					throw sameexeption("ID is repetive");//پرتاب خطا در صورت وجود ای دی تکراری
+				}
+				else {
+					checkadd = 0;// برابر صفر شودcheckaddدر صورتی که ای دی تکراری وجود نداشت 
+				}
+			}
+			if (checkadd == 0) {//اگر ای دی تکراری وجود نداشت از حلقه خارج شود
+				id = newid;
+				checkadd = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage();//چاپ کردن خطا
+		}
+	}
+	//وارد کردن بقیه ی اطلاعات مورد نیاز توسط کاربر
+	string title, type;
+	cout << "enter titel of book:" << endl;
+	cin >> title;//وارد کردن عنوان
+	cout << "entertype of book:" << endl;
+	cin >> type;//وارد کردن دسته بندی کتاب
+	cout << "enter amount  of page:" << endl;
+	cin >> pagenumber;//وارد کردن تعداد صفحات
+
+	cout << "number of book:" << endl;
+	cin >> number;//وارد کردن تعداد کتاب ها
+	ghabelbardasht = number;//ریختن تعداد کتاب ها درون تعداد قابل برداشت زیرا در ابتدا هیچ کتابی با این ای دی قرض گرفته نشده است
+	book c(id, title, pagenumber, type, number, ghabelbardasht);
+	bookuni.push_back(c);//وارد کردن کتاب مورد نظر درون وکتور مربوط به کتاب ها
+}
+void book::edit() {//در ای تابع اطلاعات مربوط به کتاب ها ویرایش می شود
+
+	int i, newid, allcheck = 1, pervoiusid, check = 1, newamount, ghabelbardasht;
+	string newtitle, newtype;
+	for (int y = 0; y < 10; y++) {//کابر تا 10 بار شانس وارد کردن ای دی درست را دارد
+		try {
+			cout << endl << "enter id:" << endl;
+			cin >> pervoiusid;
+			for (int s = 0; s < bookuni.size(); s++) {
+				if (pervoiusid == bookuni[s].getid()) {//گشتن درون وکتور مربوطه برای پیدا کردن خانه ای با ای دی یکسان با ای دی وارد شده توسط کابر
+					do {
+						cout << "enter number of item which you want to change:" << endl;//در صورت وجود ای دی وارد شده منو به کابر نشان داده می شود
+						cout << "1-ID" << endl;
+						cout << "2-TITLE" << endl;
+						cout << "3-AMOUNT OF PAGE" << endl;
+						cout << "4-TYPE" << endl;
+						cout << "5-NUMBER" << endl;
+						cout << "6-EXIT" << endl;
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p < 1000; p++) {// کابر تا 1000 بار می تواند ای دی جدید وارد کند که تکراری هم نباشد
+
+								cout << endl << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < bookuni.size(); n++) {
+
+
+										if (bookuni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+
+							}
+							bookuni[s].setid(newid);//ریختن ای دی جدید درون خونه ی مربوطه از وکتور
+							check = 1;
+
+							break;
+
+						case(2):
+							for (int p = 0; p < 1000; p++) {
+
+								cout << "enter new title:" << endl;//کابرد می تواند تا 1000بار عنوانی وارد کند که اشتباه نباشد
+								cin >> newtitle;
+								try {
+									for (int n = 0; n < bookuni.size(); n++) {
+
+										if (bookuni[n].gettitle() == newtitle) {
+											throw sameexeption("Titel is repetive");
+
+										}
+
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+							bookuni[s].settitle(newtitle);//ریختن عنوان جدید درون خونه ی مربوطه از وکتور
+							break;
+						case(3):cout << "new amount of page:" << endl;
+							cin >> newamount;
+							bookuni[s].setpagenumber(newamount);//ریختن تعداد صفحات جدید درون خونه ی مربوطه از وکتور
+							break;
+						case(4):cout << "enter new type:" << endl;
+							cin >> newtype;
+							bookuni[s].settype(newtype);//ریختن دسته جدید درون خونه ی مربوطه از وکتور
+							break;
+						case(5):
+							cout << "How many do you want add?" << endl;
+							cin >> ghabelbardasht;//اضافه کردن به تعداد کتاب ها
+
+							bookuni[s].setghabelbardasht(bookuni[s].getghabelbardasht() + ghabelbardasht);
+							bookuni[s].setnumber(bookuni[s].getnumber() + ghabelbardasht);
+							break;
+						case(6):
+							break;
+
+						}
+						allcheck = 0;
+					} while (i != 6);
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");//اگر ای دی ابتدایی وارد شده اشتباه باشد این خطا پرتاب می شود
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+
+	}
+}
+vector<book>bookuni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+void book::deleteinformation(int b)
+{  //پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+	for (int i = 0; i < bookuni.size(); i++) {//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+		if (b == bookuni[i].getid()) {
+			continue;
+		}
+		else {
+			bookuni2.push_back(bookuni[i]);
+		}
+	}
+	bookuni = bookuni2;//ریختن وکتور جدید درون وکتور اصلی
+	bookuni2.clear();//پاک کردن وکتور 
+}
+void book::report()//نشان دادن اطالاعات ثبت شده
+{
+	int s;
+	string type;
+	cout << "Do you want see all info or specific type?" << endl;
+	cout << "1-all info" << endl;
+	cout << "2-specific type" << endl;
+	cin >> s;
+	if (s == 1) {//نشان دادن همه ی اطلاعات
+		for (int i = 0; i < bookuni.size(); i++) {
+			cout << "title of book:" << endl;
+			cout << bookuni[i].gettitle() << endl;
+			cout << "amount  of page:" << endl;
+			cout << bookuni[i].getpagenumber() << endl;
+			cout << "type of book:" << endl;
+			cout << bookuni[i].gettype() << endl;
+			cout << "number of book:" << endl;
+			cout << bookuni[i].getnumber() << endl;
+			cout << "number of book which you can borrow:" << endl;
+			cout << bookuni[i].getghabelbardasht() << endl;
+		}
+	}
+	if (s == 2) {//نشان دادن اطلاعات دسته ی مشخص
+		int allcheck = 1;
+		cout << "Enter specific type:" << endl;
+		cin >> type;
+		for (int f = 0; f < 10; f++) {
+			try {
+				for (int i = 0; i < bookuni.size(); i++) {
+					if (type == bookuni[i].gettype()) {
+
+						cout << "Id of book:" << endl;
+						cout << bookuni[i].getid();
+						cout << "name of book:" << endl;
+						cout << bookuni[i].gettitle() << endl;
+						cout << "amount  of page:" << endl;
+						cout << bookuni[i].getpagenumber() << endl;
+						cout << "type of book:" << endl;
+						cout << bookuni[i].gettype() << endl;
+						cout << "number of book:" << endl;
+						cout << bookuni[i].getnumber();
+						/*cout << "number of book which you can borrow:" << endl;
+						cout << bookuni[i].getghabelbardasht();*///از لحاظ تعداد بعد مشخص کردن قرض گرفتن درستش کن
+						break;
+					}
+					else {
+						allcheck = 0;
+					}
+				}
+				if (allcheck == 0) {
+					throw notfoundexption("Not found");
+				}
+				else {
+					break;
+				}
+			}
+
+			catch (notfoundexption e) {
+				cout << e.getmassage();
+			}
+		}
+	}
+}
+void book::search() {//جست و جو کردن برای نشان دادن اطلاعات مربوط به یک کتاب خاص
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < bookuni.size(); i++) {
+				if (id == bookuni[i].getid()) {
+					cout << "name of book:" << endl;
+					cout << bookuni[i].gettitle() << endl;
+					cout << "amount  of page:" << endl;
+					cout << bookuni[i].getpagenumber() << endl;
+					cout << "type of book:" << endl;
+					cout << bookuni[i].gettype() << endl;
+					cout << "number of book:" << endl;
+					cout << bookuni[i].getnumber() << endl;
+					cout << "number of book which you can borrow:" << endl;
+					cout << bookuni[i].getghabelbardasht() << endl;
+					allcheck = 0;
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+class magzine :public library {//کلاس مجله که از کلاس کتابخانه ارث بری دارد 
+
+private:
+	int ghabelbardasht, number;
+public:
+	magzine() {};
+	magzine(int i, string tit, int pn, int number, int ghabelbardasht) :library(i, tit, pn), number(number), ghabelbardasht(ghabelbardasht) {};
+	const int getghabelbardasht() { return ghabelbardasht; }
+	void setghabelbardasht(int ghabelbardashts) { ghabelbardasht = ghabelbardashts; }
+	void setnumber(int numbers) { number = numbers; }
+	const int getnumber() { return number; }
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	void magzineload();
+};
+vector<magzine>magzineuni;//بردار مگزین یونی که برای و ذخیره ی اطلاعات مربوط به کتاب ها استفاده می شود
+void magzine::magzineload() {
+
+	int id, pagenumber = 0,  number, ghabelbardasht;
+	string title;
+	ifstream reloadmagzine("magzine.txt");
+	if (!reloadmagzine) {
+		cout << "not opened" << endl;
+	}
+	magzine c;
+	while (reloadmagzine >> id) {
+		c.setid(id);
+		reloadmagzine >> title;
+		c.settitle(title);
+		reloadmagzine >> pagenumber;
+		c.setpagenumber(pagenumber);
+
+		reloadmagzine >> number;
+		c.setnumber(number);
+		reloadmagzine >> ghabelbardasht;
+		c.setghabelbardasht(ghabelbardasht);
+
+		magzineuni.push_back(c);
+	}
+	reloadmagzine.close();
+}
+
+void magzine::add()
+{
+
+	int id, checkadd = 1, pagenumber, newid, number;
+
+
+	for (int s = 0; s < 10; s++) {
+		try {
+			cout << "enter ID of magzine:" << endl;
+			cin >> newid;
+			if (magzineuni.size() == 0) {
+				id = newid;
+			}
+			for (int i = 0; i < magzineuni.size(); i++) {
+
+				if (newid == magzineuni[i].getid()) {
+					throw sameexeption("ID is repetive");
+				}
+				else {
+					checkadd = 0;
+				}
+			}
+			if (checkadd == 0) {
+				id = newid;
+				checkadd = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage();
+		}
+	}
+	string title, type;
+	cout << "enter titel of magzine:" << endl;
+	cin >> title;
+	
+	cout << "enter amount  of page:" << endl;
+	cin >> pagenumber;
+	cout << "number of magzine:" << endl;
+	cin >> number;
+	ghabelbardasht = number;
+	magzine c(id, title, pagenumber, number, ghabelbardasht);
+	magzineuni.push_back(c);
+}// وارد کردن اطلاعات به همان شیوه ای که اطلاعات را درون وکتور مربوط به کتاب ها را درون وکتور کتاب نوشتیم
+void magzine::edit() {//به همان شیوه ای که برای کتاب ها نوشتیم
+
+	int i, newid, check = 1, allcheck = 1, pervoiusid, newamount, newnumber;
+	string newtitle;
+	for (int y = 0; y < 10; y++) {
+		try {
+			cout << "enter id:";
+			cin >> pervoiusid;
+
+			for (int s = 0; s <magzineuni.size(); s++) {
+				if (pervoiusid == magzineuni[s].getid()) {
+					do {
+						cout << "enter number of item which you want to change:" << endl;
+
+						cout << "1-ID" << endl;
+						cout << "2-TITLE" << endl;
+						cout << "3-AMOUNT OF PAGE" << endl;
+						cout << "4-NUMBER" << endl;
+						cout << "5-EXIT" << endl;
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p < 1000; p++) {
+								cout << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < magzineuni.size(); n++) {
+
+										if (magzineuni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+							magzineuni[s].setid(newid);
+							check = 1;
+							break;
+
+						case(2):
+							for (int p = 0; p < 1000; p++) {
+								cout << "enter new newtitle:" << endl;
+								cin >> newtitle;
+								try {
+									for (int n = 0; n < magzineuni.size(); n++) {
+										if (magzineuni[n].gettitle() == newtitle) {
+											throw sameexeption("Titel is repettive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage() << endl;
+								}
+								magzineuni[s].settitle(newtitle);
+							}
+							break;
+						case(3):cout << "new amount of page:" << endl;
+							cin >> newamount;
+							magzineuni[s].setpagenumber(newamount);
+							break;
+
+						case(4):
+							cout << "How many do you want add?" << endl;
+							cin >> ghabelbardasht;
+
+							magzineuni[s].setghabelbardasht(magzineuni[s].getghabelbardasht() + ghabelbardasht);
+							magzineuni[s].setnumber(magzineuni[s].getnumber() + ghabelbardasht);
+							break;
+						case(5):
+							break;
+						}
+						allcheck = 0;
+					} while (i != 5);
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+
+	}
+}
+vector<magzine>magzineuni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+void magzine::deleteinformation(int b) {
+	//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+	//پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+
+	for (int i = 0; i < magzineuni.size(); i++) {
+		if (b == magzineuni[i].getid()) {
+			continue;
+		}
+		else {
+			magzineuni2.push_back(magzineuni[i]);
+		}
+	}
+	magzineuni = magzineuni2;//ریختن وکتور جدید درون وکتور اصلی
+	magzineuni2.clear();//پاک کردن وکتور
+}
+void magzine::search() {//جست و جو کردن برای نشان دادن اطلاعات مربوط به یک مجله خاص
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < magzineuni.size(); i++) {
+				if (id == magzineuni[i].getid()) {
+					cout << "name of magzine:" << endl;
+					cout << magzineuni[i].gettitle() << endl;
+					cout << "amount  of page:" << endl;
+					cout << magzineuni[i].getpagenumber() << endl;
+					cout << "number of magzine:" << endl;
+					cout << magzineuni[i].getnumber() << endl;
+					cout << "number of magzine which you can borrow:" << endl;
+					cout << magzineuni[i].getghabelbardasht() << endl;
+					allcheck = 0;
+					break;
+				}
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+void  magzine::report() {//نشان دادن اطالاعات ثبت شده
+	for (int i = 0; i <magzineuni.size(); i++) {
+		cout << "name of magzine:" << endl;
+		cout << magzineuni[i].gettitle() << endl;
+		cout << "amount  of page:" << endl;
+		cout << magzineuni[i].getpagenumber() << endl;
+		cout << "number of magzine:" << endl;
+		cout << magzineuni[i].getnumber() << endl;
+		cout << "number of magzine which you can borrow:" << endl;
+		cout << magzineuni[i].getghabelbardasht() << endl;
+	}
+}
+class dissertation :public library {// کلاس مقاله که از کلاس کتاب خانه وراثت دارد که شامل فیلد های مقدار قابل برداشت و تعداد و سطح و دانشکده و گروه است
+
+private:
+	int ghabelbardasht, number;
+	string level, college, group;
+public:
+	dissertation() {};
+	dissertation(int i, string tit, int pn, string lev, string coll, string  gr, int num, int ghabe) :library(i, tit, pn), number(num), level(lev), college(coll), group(gr), ghabelbardasht(ghabe) {};
+	const int getghabelbardasht() { return ghabelbardasht; }
+	const string getlevel() { return  level; }
+	const string getcollege() { return  college; }
+	const string getgroup() { return  group; }
+	void setghabelbardasht(int ghabelbardashts) { ghabelbardasht = ghabelbardashts; }
+	void setlevel(string  levels) { level = levels; }
+	void setcollege(string  colleges) { college = colleges; }
+	void setgroup(string groups) { group = groups; }
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	void setnumber(int numbers) { number = numbers; }
+	const int getnumber() { return number; }
+	void dissertationreload();
+};
+vector<dissertation>dissertationuni;//بردار دیستریشن یونی که برای و ذخیره ی اطلاعات مربوط به کتاب ها استفاده می شود
+void dissertation::dissertationreload() {
+	int id, pagenumber = 0,   ghabelbardasht;
+	string title, level, college, group;
+	ifstream reloaddissertation("dissertation.txt");
+	if (!reloaddissertation) {
+		cout << "not opened" << endl;
+	}
+	dissertation c;
+	while (reloaddissertation >> id) {
+		c.setid(id);
+		reloaddissertation >> title;
+		c.settitle(title);
+		reloaddissertation >> pagenumber;
+		c.setpagenumber(pagenumber);
+		reloaddissertation >> level;
+		c.setlevel(level);
+		reloaddissertation >> college;
+		c.setcollege(college);
+		reloaddissertation >> group;
+		c.setgroup(group);
+		reloaddissertation >> ghabelbardasht;
+		c.setghabelbardasht(ghabelbardasht);
+
+		dissertationuni.push_back(c);
+	}
+	reloaddissertation.close();
+}
+void dissertation::add()
+
+
+{
+	int  checkadd = 1, newid, id, pagenumber, number,check=1;
+	string level, college, group, title,newlevel,newcollege,newgroup;
+
+	for (int s = 0; s < 10; s++) {
+		try {
+			cout << "enter ID of dissertation:" << endl;
+			cin >> newid;
+			if (dissertationuni.size() == 0) {
+				id = newid;
+			}
+			for (int i = 0; i < dissertationuni.size(); i++) {
+
+				if (newid == dissertationuni[i].getid()) {
+					throw sameexeption("ID is repetive");
+				}
+				else {
+					checkadd = 0;
+				}
+			}
+			if (checkadd == 0) {
+				id = newid;
+				checkadd = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage()<<endl;
+		}
+	}
+	cout << "enter name of dissertation:" << endl;
+	cin >> title;
+	cout << "enter amount  of page:" << endl;
+	cin >> pagenumber;
+	 number=1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "level of  dissertation:" << endl;
+			cin >> level;
+			for (int i = 0; i < level.length(); i++) {
+				if (!isalpha(level[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	
+	check = 1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "college:" << endl;
+			cin >> college;
+			for (int i = 0; i < college.length(); i++) {
+				if (!isalpha(college[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check =0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	
+	check = 1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "group:" << endl;
+			cin >> group;
+			for (int i = 0; i < group.length(); i++) {
+				if (!isalpha(group[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	
+	check = 1;
+	
+	
+	ghabelbardasht = 1;
+	dissertation c(id, title, pagenumber, level, college, group, number, ghabelbardasht);
+	dissertationuni.push_back(c);
+
+}// وارد کردن اطلاعات به همان شیوه ای که اطلاعات را درون وکتور مربوط به کتاب ها را درون وکتور کتاب نوشتیم
+void dissertation::edit() {
+
+	int i, newid, check = 1, allcheck = 1, pervoiusid, newamount, newnumber;
+	string newtitle, newlevel, newcollege, newgroup;
+	for (int y = 0; y < 10; y++) {
+		try {
+			cout << endl << "enter id:" << endl;
+			cin >> pervoiusid;
+
+			for (int s = 0; s < dissertationuni.size(); s++) {
+				if (pervoiusid == dissertationuni[s].getid()) {
+					do {
+						cout << "enter number of item which you want to change:" << endl;
+						cout << "1-ID" << endl;
+						cout << "2-TITLE" << endl;
+						cout << "3-AMOUNT OF PAGE" << endl;
+						cout << "4-LEVEL" << endl;
+						cout << "5-COLLEGE" << endl;
+						cout << "6-GROUP" << endl;
+						cout << "7-EXIT" << endl;
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p<1000; p++) {
+								cout << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < dissertationuni.size(); n++) {
+										if (dissertationuni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+							dissertationuni[s].setid(newid);
+							check = 1;
+							break;
+						case(2):
+							for (int p = 0; p<1000; p++) {
+								cout << "enter new newtitle:" << endl;
+								cin >> newtitle;
+								try {
+									for (int n = 0; n< dissertationuni.size(); n++) {
+										if (dissertationuni[n].gettitle() == newtitle) {
+											throw sameexeption("Title is repetive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+								dissertationuni[s].settitle(newtitle);
+							}
+							break;
+						case(3):cout << "new amount of page:" << endl;
+							cin >> newamount;
+							dissertationuni[s].setpagenumber(newamount);
+							break;
+
+						case(4):
+							for (int s = 0; s < 1000; s++) {
+								try {
+									cout << "enter newlevel:" << endl;
+									cin >> newlevel;
+									for (int i = 0; i < newlevel.length(); i++) {
+										if (!isalpha(newlevel[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+
+									}
+
+
+									if (check == 0) {
+
+										break;
+									}
+									break;
+								}
+
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+
+							
+							dissertationuni[s].setlevel(newlevel);
+							check = 1;
+							break;
+						case(5):
+							for (int s = 0; s < 1000; s++) {
+								try {
+									cout << "new college:" << endl;
+									cin >> newcollege;
+									for (int i = 0; i < newcollege.length(); i++) {
+										if (!isalpha(newcollege[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+
+									}
+
+
+									if (check == 0) {
+
+										break;
+									}
+									break;
+								}
+
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+						
+							dissertationuni[s].setcollege(newcollege);
+							check = 1;
+							break;
+						case(6):
+							for (int s = 0; s < 1000; s++) {
+								try {
+									cout << "new group:" << endl;
+									cin >> newgroup;
+									for (int i = 0; i < newgroup.length(); i++) {
+										if (!isalpha(newgroup[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+
+									}
+
+
+									if (check == 0) {
+
+										break;
+									}
+									break;
+								}
+
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							dissertationuni[s].setgroup(newgroup);
+							break;
+						case(7):
+							break;
+						}
+					} while (i != 7);
+					break;
+				}
+				else {
+					allcheck = 0;
+				}
+			}
+			if (allcheck == 0) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+
+	}
+}//به همان شیوه ای که برای کتاب ها نوشتیم
+vector<dissertation>dissertationuni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+void dissertation::deleteinformation(int b) {
+	//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+	//پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+
+	for (int i = 0; i < dissertationuni.size(); i++) {
+		if (b == dissertationuni[i].getid()) {
+			continue;
+		}
+		else {
+			dissertationuni2.push_back(dissertationuni[i]);
+		}
+	}
+	dissertationuni = dissertationuni2;
+	dissertationuni2.clear();
+};
+void dissertation::search() {//جست و جو کردن برای نشان دادن اطلاعات مربوط به یک مقاله خاص
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < dissertationuni.size(); i++) {
+				if (id == dissertationuni[i].getid()) {
+					cout << " name of dissertation:" << endl;
+					cout << dissertationuni[i].gettitle() << endl;
+					cout << " amount  of page:" << endl;
+					cout << dissertationuni[i].getpagenumber() << endl;
+					cout << "number of  dissertation:" << endl;
+					cout << dissertationuni[i].getnumber() << endl;
+					cout << "level of  dissertation:" << endl;
+					cout << dissertationuni[i].getlevel() << endl;
+					cout << "college:" << endl;
+					cout << dissertationuni[i].getcollege() << endl;
+					cout << "group:" << endl;
+					cout << dissertationuni[i].getgroup() << endl;
+					cout << "number of magzine which you can borrow:" << endl;
+					cout << dissertationuni[i].getghabelbardasht() << endl;
+					allcheck = 0;
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+void  dissertation::report() {//نشان دادن اطالاعات ثبت شده
+	for (int i = 0; i <dissertationuni.size(); i++) {
+		cout << "enter name of dissertation:" << endl;
+		cout << dissertationuni[i].gettitle() << endl;
+		cout << "enter amount  of page:" << endl;
+		cout << dissertationuni[i].getpagenumber() << endl;
+		cout << "number of  dissertation:" << endl;
+		cout << dissertationuni[i].getnumber() << endl;
+		cout << "level of  dissertation:" << endl;
+		cout << dissertationuni[i].getlevel() << endl;
+		cout << "college:" << endl;
+		cout << dissertationuni[i].getcollege() << endl;
+		cout << "group:" << endl;
+		cout << dissertationuni[i].getgroup() << endl;
+		cout << "number of magzine which you can borrow:" << endl;
+		cout << dissertationuni[i].getghabelbardasht() << endl;
+	}
+}
+class person :public library {//کلاس افراد که از کلاس کتابخانه ارث بری دارد و شامل فیلد های ای دی و کد ملی و اسم کوچک و اسم بزرگ و تاریخ تولد است
+
+private:
+	int id, nationalcode;
+	string fname, lname, birthdate;
+
+public:
+	person() {};
+	person(int i, string fn, string ln, int nc, string  bd) :id(i), fname(fn), lname(ln), nationalcode(nc), birthdate(bd) {};
+	
+	const int getid() { return id; }
+	const int getnationalcode() { return nationalcode; }
+	
+	const string getfname() { return fname; }
+	const string getlname() { return lname; }
+	const string getbirthdate() { return birthdate; }
+
+	void setid(int ids) { id = ids; }
+	void setnationalcode(int nationalcodes) { nationalcode = nationalcodes; }
+
+	void setfname(string fnames) { fname = fnames; }
+	void setlname(string lnames) { lname = lnames; }
+	void setbirthdate(string birthdates) { birthdate = birthdates; }
+
+};
+class personel :public person {// کلاس پرسونل که از کلاس افراد ارث بری دارد و شامل اطلاعات نوع پرسونل علاوه بر اطلاعاتی که درون کلاس افراد وجود دارد است 
+
+private:
+	string type;
+public:
+	personel() {};
+	personel(int i, string ty, string fn, string ln, int nc, string  bd) :person(i, fn, ln, nc, bd), type(ty) {};
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	const string gettype() { return type; }
+	void settype(string types) { type = types; }
+	void reloadpersone();
+};
+vector<personel>personeluni;//بردار پرسونل یونی که برای و ذخیره ی اطلاعات مربوط به پرسونل ها استفاده می شود 
+void personel::reloadpersone() {
+	string fname, lname, birthdate, type;
+	int id, nationalcode;
+	ifstream reloadpersonel("personel.txt");
+	if (!reloadpersonel) {
+		cout << "not opened" << endl;
+	}
+	personel c;
+	while (reloadpersonel >> id) {
+		c.setid(id);
+		reloadpersonel >> type;
+		c.settitle(type);
+		reloadpersonel >> fname;
+		c.setfname(fname);
+		reloadpersonel >> lname;
+		c.setlname(lname);
+		reloadpersonel >> nationalcode;
+		c.setnationalcode(nationalcode);
+		reloadpersonel >> birthdate;
+		c.setbirthdate(birthdate);
+		
+
+		personeluni.push_back(c);
+	}
+	reloadpersonel.close();
+}
+void personel::add() {// دخیره کردن  پرسونل جدید
+	int id, nationalcode, check = 1, newid;
+	string fname, lname, birthdate, type, newfname, newlname;
+	for (int s = 0; s < 10; s++) {//کاربر تا 10 بار شانس وارد کردن ای درست و غیر تکراری را دارد
+		try {
+			cout << "enter ID of personel:" << endl;
+			cin >> newid;
+			if (personeluni.size() == 0) {//اگر برای اولین بار ای دی درون وکتور وارد شود ای دی وجود ندارد که چک شود بنابراین ای دی وارد شده مستقیما داخل وکتور می شود
+
+				id = newid;
+			}
+			for (int i = 0; i < personeluni.size(); i++) {
+
+				if (newid == personeluni[i].getid()) {
+					throw sameexeption("ID is repetive");
+				}
+				else {
+					check = 0;
+				}
+			}
+			if (check == 0) {
+				id = newid;
+				check = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage();
+		}
+	}
+
+	cout << "enter type of personel:" << endl;
+	cin >> type;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter firstname:" << endl;
+			cin >> newfname;
+			for (int i = 0; i < newfname.length(); i++) {
+				if (!isalpha(newfname[i]))//چک بشه که اسمی که وارد شده حتما از حروف تشکیل شده باشد
+				{
+					throw errorname("this name is not correct");//اگر تمام اسم از حروف نبود ارور بدهد
+				}
+				else {
+					check = 0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	fname = newfname;
+	check = 1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter lastname:" << endl;
+			cin >> newlname;
+			for (int i = 0; i < newlname.length(); i++) {
+				if (!isalpha(newlname[i]))//چک بشه که فامیلی که وارد شده حتما از حروف تشکیل شده باشد
+				{
+					throw errorname("this name is not correct");//اگر تمام فامیلی از حروف نبود ارور بدهد
+				}
+				else {
+					check =0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	lname = newlname;
+	check = 1;
+	cout << "enter nationalcode:" << endl;
+	cin >> nationalcode;
+	cout << "enter birthdate:" << endl;
+	cin >> birthdate;
+
+	
+	personel c(id, type, fname, lname, nationalcode, birthdate);
+	personeluni.push_back(c);//اضافه کردن فرد درون وکتور مربوطه
+}
+void personel::edit() {//ویرایش کردن اطلاعات مربوط به پرسونل
+	int i, id, newid, newnationalcode, newpunishment, pervoiusid, allcheck = 1, check = 1;
+	string newfname, newlname, newbirthdate, newtype;
+
+	for (int y = 0; y < 10; y++) {
+		try {
+			cout << endl << "enter id:" << endl;
+			cin >> pervoiusid;
+
+			for (int s = 0; s < personeluni.size(); s++) {
+				if (pervoiusid == personeluni[s].getid()) {
+					do {
+						cout << "enter number of item which you want to change:" << endl;
+
+						cout << "1-ID" << endl;
+						cout << "2-Firstname" << endl;
+						cout << "3-Lastname" << endl;
+						cout << "4-type" << endl;
+						cout << "5-Nationalcode" << endl;
+						cout << "6-Birthdate" << endl;
+						cout << "7-EXIT" << endl;
+						
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p < 100; p++) {
+								cout << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < personeluni.size(); n++) {
+										if (personeluni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+							personeluni[s].setid(newid);
+							check = 1;
+							break;
+						case(2):
+							for (int p = 0; p < 100; p++) {
+								try {
+									cout << "enter firstname:" << endl;
+									cin >> newfname;
+
+									for (int i = 0; i < newfname.length(); i++) {
+										if (!isalpha(newfname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										personeluni[s].setfname(newfname);
+										break;
+									}
+								}
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							break;
+						case(3):
+							for (int p = 0; p < 100; p++) {
+								try {
+									cout << "enter lastname:" << endl;
+									cin >> newlname;
+
+									for (int i = 0; i < newlname.length(); i++) {
+										if (!isalpha(newlname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										personeluni[s].setlname(newlname);
+										break;
+									}
+								}
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							break;
+						case(4):
+							cout << "enter newtype:" << endl;
+							cin >> newtype;
+							personeluni[s].settype(newtype);
+							break;
+						case(5):
+							cout << "new nationalcode:" << endl;
+							cin >> newnationalcode;
+							personeluni[s].setnationalcode(newnationalcode);
+							break;
+						case(6):
+							cout << "new birthdate:" << endl;
+							cin >> newbirthdate;
+							personeluni[s].setbirthdate(newbirthdate);
+							break;
+						case(7):
+							
+							break;
+						
+						}
+						allcheck = 0;
+					} while (i!=7);
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+
+	}
+}
+vector<personel>personeluni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+void personel::deleteinformation(int b) {
+	//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+	//پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+
+	for (int i = 0; i < personeluni.size(); i++) {
+		if (b == personeluni[i].getid()) {
+			continue;
+		}
+		else {
+			personeluni2.push_back(personeluni[i]);
+		}
+	}
+	personeluni = personeluni2;
+	personeluni2.clear();//وکتور دومی را بعد از اینکه در وکتور جدید ریختیم پاک می کنیم
+}
+void personel::search() {//جست و جو برای مشاهده اطلاعات مربوط به یک فرد
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < personeluni.size(); i++) {
+				if (id == personeluni[i].getid()) {
+					cout << "id:" << endl;
+					cout << personeluni[i].getid() << endl;
+					cout << " type:" << endl;
+					cout << personeluni[i].gettype() << endl;
+					cout << " name:" << endl;
+					cout << personeluni[i].getfname() << endl;
+					cout << "lastname:" << endl;
+					cout << personeluni[i].getlname() << endl;
+					cout << "nationalcode:" << endl;
+					cout << personeluni[i].getnationalcode() << endl;
+					cout << "birthdate :" << endl;
+					cout << personeluni[i].getbirthdate() << endl;
+				
+					allcheck = 0;
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+void  personel::report() {//نشان دادن تمام اطلاعات ثبت شده
+	for (int i = 0; i < personeluni.size(); i++) {
+		cout << "id:" << endl;
+		cout << personeluni[i].getid() << endl;
+		cout << " type:" << endl;
+		cout << personeluni[i].gettype() << endl;
+		cout << "firstname:" << endl;
+		cout << personeluni[i].getfname() << endl;
+		cout << "lastname:" << endl;
+		cout << personeluni[i].getlname() << endl;
+		cout << "nationalcode:" << endl;
+		cout << personeluni[i].getnationalcode() << endl;
+		cout << "birthdate :" << endl;
+		cout << personeluni[i].getbirthdate() << endl;
+	
+	}
+}
+class student :public person {// کلاس پرسونل که از کلاس افراد ارث بری دارد و شامل اطلاعات نوع پرسونل علاوه بر اطلاعاتی که درون کلاس افراد وجود دارد است 
+
+private:
+	string type;
+public:
+	student() {};
+	student(int i, string ty, string fn, string ln, int nc, string  bd) :person(i, fn, ln, nc, bd), type(ty) {};
+
+	const string gettype() { return type; }
+	void settype(string types) { type = types; }
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	void reloadstudent();
+};
+vector<student>studentuni;//بردار استیودنت یونی که برای و ذخیره ی اطلاعات مربوط به استیودنت ها استفاده می شود
+void student::reloadstudent() {
+	string fname, lname, birthdate, type;
+	int id, nationalcode;
+	ifstream reloadstudent("student.txt");
+	if (!reloadstudent) {
+		cout << "not opened" << endl;
+	}
+	student c;
+	while (reloadstudent >> id) {
+		c.setid(id);
+		reloadstudent >> type;
+		c.settitle(type);
+		reloadstudent >> fname;
+		c.setfname(fname);
+		reloadstudent >> lname;
+		c.setlname(lname);
+		reloadstudent >> nationalcode;
+		c.setnationalcode(nationalcode);
+		reloadstudent >> birthdate;
+		c.setbirthdate(birthdate);
+
+		studentuni.push_back(c);
+	}
+	reloadstudent.close();
+}
+void student::add()// دخیره کردن  دانشجو جدید همانند ذهیره کردن پرسونل جدید
+{
+	int id, nationalcode,check = 1, newid;
+	string fname, lname, birthdate, type;
+	for (int s = 0; s < 10; s++) {
+		try {
+			cout << "enter ID of student:" << endl;
+			cin >> newid;
+			if (studentuni.size() == 0) {
+				id = newid;
+			}
+			for (int i = 0; i < studentuni.size(); i++) {
+
+				if (newid == studentuni[i].getid()) {
+					throw sameexeption("ID is repetive");
+				}
+				else {
+					check = 0;
+				}
+			}
+			if (check == 0) {
+				id = newid;
+				check = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	cout << "enter type of student:" << endl;
+	cin >> type;
+
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter firstname:" << endl;
+			cin >> fname;
+			for (int i = 0; i < fname.length(); i++) {
+				if (!isalpha(fname[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	
+	check = 1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter lastname:" << endl;
+			cin >>lname;
+			for (int i = 0; i < lname.length(); i++) {
+				if (!isalpha(lname[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	
+	check = 1;
+	cout << "enter nationalcode:" << endl;
+	cin >> nationalcode;
+	cout << "enter birthdate:" << endl;
+	cin >> birthdate;
+
+
+	student c(id, type, fname, lname, nationalcode, birthdate);
+	studentuni.push_back(c);
+}
+void student::edit() {//ویرایش کردن اطلاعات مربوط به دانشجو ها همانند ویرایش پرسونل
+	int i, id, newid, newnationalcode, newpunishment, pervoiusid, allcheck = 1, check = 1;
+	string newfname, newlname, newbirthdate, newtype;
+
+	for (int y = 0; y < 10; y++) {
+		try {
+			cout << "enter id:" << endl;
+			cin >> pervoiusid;
+
+			for (int s = 0; s < studentuni.size(); s++) {
+				if (pervoiusid == studentuni[s].getid()) {
+					do {
+						cout << "enter number of item which you want to change:" << endl;
+
+						cout << "1-ID" << endl;
+						cout << "2-Type" << endl;
+						cout << "3-Firstname" << endl;
+						cout << "4-Lastname" << endl;
+						cout << "5-Nationalcode" << endl;
+						cout << "6-Birthdate" << endl;
+						cout << "7-EXIT" << endl;
+						
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p < 1000; p++) {
+								cout << endl << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < studentuni.size(); n++) {
+										if (studentuni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							studentuni[s].setid(newid);
+							check = 1;
+
+							break;
+						case(2):
+
+							cout << "enter newtype:" << endl;
+							cin >> newtype;
+							studentuni[s].settype(newtype);
+							break;
+						case(3):
+							for (int p = 0; p < 100; p++) {
+								try {
+									cout << "enter firstname:" << endl;
+									cin >> newfname;
+
+									for (int i = 0; i < newfname.length(); i++) {
+										if (!isalpha(newfname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										studentuni[s].setfname(newfname);
+										break;
+									}
+								}
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							break;
+						case(4):
+							for (int s = 0; s < 100; s++) {
+								try {
+									cout << "enter lastname:" << endl;
+									cin >> newlname;
+
+									for (int i = 0; i < newlname.length(); i++) {
+										if (!isalpha(newlname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										studentuni[s].setlname(newlname);
+										break;
+									}
+								}
+								catch (errorname e) {
+									cout << e.getmassage() << endl;
+								}
+							}
+							break;
+						case(5):
+							cout << "new nationalcode:" << endl;
+							cin >> newnationalcode;
+							studentuni[s].setnationalcode(newnationalcode);
+							break;
+						case(6):
+							cout << "new birthdate:" << endl;
+							cin >> newbirthdate;
+							studentuni[s].setbirthdate(newbirthdate);
+							break;
+						
+							
+						case(7):
+							break;
+						}
+						allcheck = 0;
+					} while (i!=7);
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found") ;
+			}
+			else {
+				break;
+			}
+		}
+
+		catch (notfoundexption e) {
+			cout << e.getmassage() << endl;
+		}
+
+	}
+}
+vector<student>studentuni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+
+void student::deleteinformation(int b) {
+	//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+	//پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+
+	for (int i = 0; i < studentuni.size(); i++) {
+		if (b == studentuni[i].getid()) {
+			continue;
+		}
+		else {
+			studentuni2.push_back(studentuni[i]);
+		}
+	}
+	studentuni = studentuni2;
+	studentuni2.clear();//وکتور دومی را بعد از اینکه در وکتور جدید ریختیم پاک می کنیم
+}
+void student::search() {//جست و جو برای مشاهده اطلاعات مربوط به یک فرد
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < studentuni.size(); i++) {
+				if (id == studentuni[i].getid()) {
+					cout << " id:" << endl;
+					cout << studentuni[i].getid() << endl;
+					cout << " type:" << endl;
+					cout << studentuni[i].gettype() << endl;
+					cout << " name:" << endl;
+					cout << studentuni[i].getfname() << endl;
+					cout << "lastname:" << endl;
+					cout << studentuni[i].getlname() << endl;
+					cout << "nationalcode:" << endl;
+					cout << studentuni[i].getnationalcode() << endl;
+					cout << "birthdate :" << endl;
+					cout << studentuni[i].getbirthdate() << endl;
+					
+					allcheck = 0;
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+void student::report()
+//نشان دادن تمام اطلاعات ثبت شده
+{
+	for (int i = 0; i < studentuni.size(); i++) {
+		cout << " id:" << endl;
+		cout << studentuni[i].getid() << endl;
+		cout << " type:" << endl;
+		cout << studentuni[i].gettype() << endl;
+		cout << " name:" << endl;
+		cout << studentuni[i].getfname() << endl;
+		cout << "lastname:" << endl;
+		cout << studentuni[i].getlname() << endl;
+		cout << "nationalcode:" << endl;
+		cout << studentuni[i].getnationalcode() << endl;
+		cout << "birthdate :" << endl;
+		cout << studentuni[i].getbirthdate() << endl;
+		
+
+	}
+}
+class librarian :public person {// کلاس لایبرارین که از کلاس افراد ارث بری دارد و شامل اطلاعات نوع لایبرارین و مدرک علاوه بر اطلاعاتی که درون کلاس افراد وجود دارد است 
+
+private:
+	string degree, type;
+public:
+	librarian() {};
+	librarian(int i, string ty, string fn, string ln, int nc, string  bd, string deg) :person(i, fn, ln, nc, bd), type(ty), degree(deg) {};
+	const string getdegree() { return degree; }
+	const string gettype() { return type; }
+	void setdegree(string degrees) { degree = degrees; }
+	void settype(string types) { type = types; }
+	void add();
+	void edit();
+	void deleteinformation(int b);
+	void report();
+	void search();
+	void reloadlibrarian();
+};
+vector<librarian>librarianuni;//بردار استیودنت یونی که برای و ذخیره ی اطلاعات مربوط به کتابداران ها استفاده می شود
+vector<librarian>librarianuni2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+void librarian::reloadlibrarian() {
+	string fname, lname, birthdate, type,degree;
+	int id, nationalcode;
+	ifstream reloadlibrarian("librarian.txt");
+	if (!reloadlibrarian) {
+		cout << "not opened" << endl;
+	}
+	librarian c;
+	while (reloadlibrarian >> id) {
+		c.setid(id);
+		reloadlibrarian >> type;
+		c.settitle(type);
+		reloadlibrarian >> fname;
+		c.setfname(fname);
+		reloadlibrarian >> lname;
+		c.setlname(lname);
+		reloadlibrarian >> nationalcode;
+		c.setnationalcode(nationalcode);
+		reloadlibrarian >> birthdate;
+		c.setbirthdate(birthdate);
+		reloadlibrarian >> degree;
+		c.setbirthdate(degree);
+
+
+		librarianuni.push_back(c);
+	}
+	reloadlibrarian.close();
+}
+void librarian::add() {// دخیره کردن  کتابدار جدید همانند ذهیره کردن پرسونل جدید
+	int id, nationalcode, check = 1, newid;
+	string fname, lname, birthdate, type, degree, newfname, newlname, newdegree;
+	for (int s = 0; s < 10; s++) {
+		try {
+			cout << "enter ID of librarian:" << endl;
+			cin >> newid;
+			if (librarianuni.size() == 0) {
+				id = newid;
+			}
+			for (int i = 0; i < librarianuni.size(); i++) {
+
+				if (newid == studentuni[i].getid()) {
+					throw sameexeption("ID is repetive");
+				}
+				else {
+					check = 0;
+				}
+			}
+			if (check == 0) {
+				id = newid;
+				check = 1;
+			}break;
+		}
+
+		catch (sameexeption e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	cout << "enter type of librarian:" << endl;
+	cin >> type;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter firstname:" << endl;
+			cin >> newfname;
+			for (int i = 0; i < newfname.length(); i++) {
+				if (!isalpha(newfname[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check =0;
+				}
+
+			}
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	fname = newfname;
+	check = 1;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter lastname:" << endl;
+			cin >> newlname;
+			for (int i = 0; i < newlname.length(); i++) {
+				if (!isalpha(newlname[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+
+
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	lname = newlname;
+	check = 1;
+	cout << "enter nationalcode:" << endl;
+	cin >> nationalcode;
+	cout << "enter birthdate:" << endl;
+	cin >> birthdate;
+	for (int s = 0; s < 1000; s++) {
+		try {
+			cout << "enter degree:" << endl;
+			cin >> newdegree;
+			for (int i = 0; i <newdegree.length(); i++) {
+				if (!isalpha(newdegree[i]))
+				{
+					throw errorname("this name is not correct");
+				}
+				else {
+					check = 0;
+				}
+
+			}
+			if (check == 0) {
+
+				break;
+			}
+			break;
+		}
+
+		catch (errorname e) {
+			cout << e.getmassage() << endl;
+		}
+	}
+	degree = newdegree;
+
+	librarian c(id, type, fname, lname, nationalcode, birthdate, degree);
+	librarianuni.push_back(c);
+}
+void librarian::edit() {//ویرایش کردن اطلاعات مربوط به دانشجو ها
+	int i, id, newid, newnationalcode, pervoiusid, allcheck = 1, check = 1;
+	string newfname, newlname, newbirthdate, newdegree, newtype;
+
+	for (int y = 0; y < 10; y++) {//کاربر تا 10 بار شانس وارد کردن ای درست و غیر تکراری را دارد
+		try {
+			cout << endl << "enter id:" << endl;
+			cin >> pervoiusid;
+			for (int s = 0; s < librarianuni.size(); s++) {
+				if (pervoiusid == librarianuni[s].getid()) {
+					do {
+						cout << "enter number of item which you want to change:" << endl;
+						cout << "1-ID" << endl;
+						cout << "2-Type" << endl;
+						cout << "3-Firstname" << endl;
+						cout << "4-Lastname" << endl;
+						cout << "5-Nationalcode" << endl;
+						cout << "6-Birthdate" << endl;
+						cout << "7-degree" << endl;
+						cout << "8-EXIT" << endl;
+						cin >> i;
+						switch (i)
+						{
+						case(1):
+							for (int p = 0; p < 1000; p++) {
+
+
+								cout << "enter new id:" << endl;
+								cin >> newid;
+								try {
+									for (int n = 0; n < librarianuni.size(); n++) {
+										if (librarianuni[n].getid() == newid) {
+											throw sameexeption("ID is repetive");
+										}
+									}
+									break;
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+							librarianuni[s].setid(newid);
+							check = 1;
+
+							break;
+
+						case(2):cout << "enter newtype:" << endl;
+							cin >> newtype;
+							librarianuni[s].settype(newtype);
+
+							break;
+						case(3):
+							for (int p = 0; p< 10; p++) {
+								try {
+									cout << "enter firstname:" << endl;
+									cin >> newfname;
+
+									for (int i = 0; i <newfname.length(); i++) {
+										if (!isalpha(newfname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										librarianuni[s].setfname(newfname);
+										break;
+									}
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+
+							break;
+						case(4):
+							for (int p = 0; p < 10; p++) {
+								try {
+									cout << " new lastname:" << endl;
+									cin >> newlname;
+
+									for (int i = 0; i < newlname.length(); i++) {
+										if (!isalpha(newlname[i]))
+										{
+											throw errorname("this name is not correct");
+										}
+										else {
+											check = 0;
+										}
+									}
+									if (check == 0) {
+										librarianuni[s].setlname(newlname);
+										break;
+									}
+								}
+								catch (sameexeption e) {
+									cout << e.getmassage();
+								}
+							}
+
+							break;
+						case(5):
+							cout << "new nationalcode:" << endl;
+							cin >> newnationalcode;
+							librarianuni[s].setnationalcode(newnationalcode);
+							break;
+						case(6):
+							cout << "new birthdate:" << endl;
+							cin >> newbirthdate;
+							librarianuni[s].setbirthdate(newbirthdate);
+							break;
+						case(7):
+							cout << " new degree:" << endl;
+							cin >> degree;
+							librarianuni[s].setdegree(newdegree);
+							break;
+						case(8):
+							break;
+
+
+						}
+						allcheck = 0;
+
+					} while (i != 8);
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+
+	}
+}
+void librarian::deleteinformation(int b) {
+	//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+	//پاک کردن خانه ای از وکتور که می خواهیم اطلاعات مربوط به آن پاک شود
+	for (int i = 0; i < librarianuni.size(); i++) {
+		if (b == librarianuni[i].getid()) {
+			continue;
+		}
+		else {
+			librarianuni2.push_back(librarianuni[i]);
+		}
+	}
+	librarianuni = librarianuni2;
+	librarianuni2.clear();//وکتور دومی را بعد از اینکه در وکتور جدید ریختیم پاک می کنیم
+};
+void librarian::search()
+{//جست و جو برای مشاهده اطلاعات مربوط به یک فرد
+	int id, allcheck = 1;
+	for (int i = 0; i<10; i++) {
+		cout << "enter id to search:" << endl;
+		cin >> id;
+		try {
+			for (int i = 0; i < librarianuni.size(); i++) {
+				if (id == librarianuni[i].getid()) {
+					cout << "id:" << endl;
+					cout << librarianuni[i].getid() << endl;
+					cout << " type:" << endl;
+					cout << librarianuni[i].gettype() << endl;
+					cout << " name:" << endl;
+					cout << librarianuni[i].getfname() << endl;
+					cout << "lastname:" << endl;
+					cout << librarianuni[i].getlname() << endl;
+					cout << "nationalcode:" << endl;
+					cout << librarianuni[i].getnationalcode() << endl;
+					cout << "birthdate :" << endl;
+					cout << librarianuni[i].getbirthdate() << endl;
+					cout << "degree:" << endl;
+					cout << librarianuni[i].getdegree() << endl;
+					allcheck = 0;
+					break;
+				}
+
+			}
+			if (allcheck == 1) {
+				throw notfoundexption("Not found");
+			}
+			else {
+				break;
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+}
+void librarian::report() {//نشان دادن تمام اطلاعات ثبت شده
+	for (int i = 0; i < librarianuni.size(); i++) {
+		cout << "id:" << endl;
+		cout << librarianuni[i].getid() << endl;
+		cout << " type:" << endl;
+		cout << librarianuni[i].gettype() << endl;
+		cout << " name:" << endl;
+		cout << librarianuni[i].getfname() << endl;
+		cout << "lastname:" << endl;
+		cout << librarianuni[i].getlname() << endl;
+		cout << "nationalcode:" << endl;
+		cout << librarianuni[i].getnationalcode() << endl;
+		cout << "birthdate :" << endl;
+		cout << librarianuni[i].getbirthdate() << endl;
+		cout << "degree:" << endl;
+		cout << librarianuni[i].getdegree() << endl;
+
+	}
+}
+class date {//کلاسای که در آن تاریخ های وارد شده بررسی و ثبت می شود
+private:
+	int year, month, day;
+public:
+	date() {};
+	date(int y, int m, int d) :year(y), month(m), day(d) {};
+	const int getyear() { return year; }
+	const int getmonth() { return month; }
+	const int getday() { return day; }
+	void setyear(int years) { year = years; }
+	void setmonth(int months) { month = months; }
+	void setday(int days) { day = days; }
+	date operator+(const date&r)const {//سربارگذاری عملگر برای جمع کرد دوتا کلاس 
+		date temp;
+		temp.day =  r.day+day;
+		temp.month = r.month+ month ;
+		temp.year =r.year+ year ;
+		//مدیریت کلاس های وارد شده از لحاظ تعداد روز بر اساس ماه
+		if (temp.month <= 6 && temp.month>0) {
+			if (temp.day > 31) {
+				temp.month = temp.month + 1;
+				temp.day = temp.day - 31;
+
+			}
+		}
+		if (temp.month<12 && temp.month>6) {
+			if (temp.day> 30) {
+				temp.month = temp.month + 1;
+				temp.day = temp.day - 30;
+
+			}
+		}
+
+		if (temp.month == 12 && temp.day>29) {
+			temp.year = temp.year + 1;
+			temp.day = temp.day - 29;
+			temp.month = 1;
+		}
+
+		return temp;
+	}
+
+};
+int compare(date b, date c) {//مقایسه کردن دو تاریخ با هم
+	if (b.getyear() > c.getyear()) {//اگر سال اولین تاریخ بیشتر از دومی باشد 1-برگردانده شود
+		return -1;
+	}
+	if (b.getyear() < c.getyear()) {//اگر سال دومی تاریخ بیشتر از دومی باشد 1برگردانده شود
+		return 1;
+	}
+	else {
+		if (b.getmonth() > c.getmonth()) {//اگر ماه اولین تاریخ بیشتر از دومی باشد 1-برگردانده شود
+			return -1;
+		}
+		if (b.getmonth() < c.getmonth()) {//اگر ماه دومی تاریخ بیشتر از دومی باشد 1برگردانده شود
+			return 1;
+		}
+		else {
+			if (b.getday()> c.getday()) {//اگر روز اولین تاریخ بیشتر از دومی باشد 1-برگردانده شود
+				return -1;
+			}
+			if (b.getday() < c.getday()) {//اگرروز دومی تاریخ بیشتر از دومی باشد 1برگردانده شود
+				return 1;
+			}
+			else {//اگر دو تاریخ با هم برابر باشد 0 برگرداننده شود
+				return 0;
+			}
+		}
+	}
+}
+class borrow {//کلاس قرض گرفتن که شامل فیلدهای ای دی بوک(همه نوشتار ها)و ای دی شخص جریمه تاریخ گرفتن تاریخ برگرداندن کتاب و اسم نوشتار است
+
+private:
+	int bookid, personid,punishment;
+	date getdate, getbackdate;
+	string name;
+public:
+	borrow() {};
+	borrow(int bi, int pi, date gdat, date  gbackdate,string nam) :name(nam),bookid(bi), personid(pi), getdate(gdat), getbackdate(gbackdate) {};
+	borrow(int bi, int pi, date gdat, date  gbackdate, string nam,int punish) :name(nam), bookid(bi), personid(pi), getdate(gdat), getbackdate(gbackdate),punishment(punish) {};
+	const int getpunishment() { return punishment; }
+	void setpunishment(int punishments) { punishment = punishments; }
+	const int getbookid() { return bookid; }
+	const int getpersonid() { return personid; }
+	void setbookid(int bookids) { bookid = bookids; }
+	void setpersonid(int personids) { personid = personids; }
+	const date getgetdate() { return getdate; }
+	void setgetdate(date getdates) { getdate = getdates; }
+	const date getgetbackdate() { return getbackdate; }
+	void setgetbackdate(date getbackdates) { getbackdate = getbackdates; }
+	void setname(string names) { name = names; }
+	const string getname() { return name; }
+	void getbook(int type, int personid);
+	void returnbook(int personid, int type);
+	void edit();
+	void search();
+	void calcutepunishmentstudent(int id);
+	void calcutepunishmentpersonel(int id);
+	void showallinfo(int peronid, int type);
+	void report();
+	void reloadgetbookstudent();
+	void reloadgetbookpersonel();
+};
+vector<borrow>getbookstudent;//بردار گت بوک استیودنت  که برای و ذخیره ی اطلاعات مربوط به نوشتار های استیودنت ها استفاده می شود
+vector<borrow>getbookpersonel;//بردار گت بوک پرسونل  که برای و ذخیره ی اطلاعات مربوط به نوشتار های پرسونل ها استفاده می شود
+vector<borrow>getbookstudent2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+vector<borrow>getbookpersonel2;//وکتور دوم که وقتی خواستیم اطلاعات پاک می کنیم اون خانه از وکتور را درون این وکتور نمی نویسیم و این وکتور جدید را درون وکتور قدیمی می ریزیم و این وکتور را پاک می کنیم
+void borrow::reloadgetbookstudent() {
+	int pi, bi,punish,day,month,year;
+	date  gbd, gd;
+	string name;
+	ifstream reloadgetbookstudent("getbookstudent.txt");
+	if (!reloadgetbookstudent) {
+		cout << "not opened" << endl;
+	}
+	borrow c;
+	while (reloadgetbookstudent >>pi) {
+		c.setpersonid(pi);
+		reloadgetbookstudent >>bi;
+		c.setbookid(bi);
+		reloadgetbookstudent >> name;
+		c.setname(name);
+		reloadgetbookstudent >> year;
+		gd.setyear(year);
+		reloadgetbookstudent >> month;
+		gd.setmonth(month);
+		reloadgetbookstudent >> day;
+		gd.setday(day);
+		c.setgetdate(gd);
+		reloadgetbookstudent >> year;
+		gbd.setyear(year);
+		reloadgetbookstudent >> month;
+		gbd.setmonth(month);
+		reloadgetbookstudent >> day;
+		gbd.setday(day);
+		c.setgetbackdate(gbd);
+		reloadgetbookstudent >>punish;
+		c.setpunishment(punish);
+		getbookstudent.push_back(c);
+	}
+	reloadgetbookstudent.close();
+}
+void borrow::reloadgetbookpersonel() {
+	int pi, bi, punish, day, month, year;
+	date  gbd, gd;
+	string name;
+	ifstream reloadgetbookpersonel("getbookpersonel.txt");
+	if (!reloadgetbookpersonel) {
+		cout << "not opened" << endl;
+	}
+	borrow ci;
+	while (reloadgetbookpersonel >> pi) {
+		ci.setpersonid(pi);
+		reloadgetbookpersonel >> bi;
+		ci.setbookid(bi);
+		reloadgetbookpersonel >> name;
+		ci.setname(name);
+		reloadgetbookpersonel >> year;
+		gd.setyear(year);
+		reloadgetbookpersonel >> month;
+		gd.setmonth(month);
+		reloadgetbookpersonel >> day;
+		gd.setday(day);
+		ci.setgetdate(gd);
+		reloadgetbookpersonel >> year;
+		gbd.setyear(year);
+		reloadgetbookpersonel >> month;
+		gbd.setmonth(month);
+		reloadgetbookpersonel >> day;
+		gbd.setday(day);
+		ci.setgetbackdate(gbd);
+		reloadgetbookpersonel >> punish;
+		ci.setpunishment(punish);
+		getbookpersonel.push_back(ci);
+	}
+	reloadgetbookpersonel.close();
+}
+
+
+void borrow::calcutepunishmentstudent(int id)
+{//محاسبه کردن جریمه برای دانشجوها
+	int   day, month, year, sum=0, jarimeh, days1, days2, ekhtelaf;
+	date today, gb;
+	bool flag = true;
+	cout << "enter date of today:" << endl;
+
+	while (flag) {
+		for (int y = 0; y<10; y++) {//کاربر تا 10 بار می تواند روزی درست بین اعداد 0تا 31 بنویسد
+			try {
+				cout << "enter today date:" << endl;
+				cout << "day:" << endl;
+				cin >> day;
+				if (day> 30 || day< 0) {
+					throw wrongdate("wrong day");//اگر روز بین 0تا 31 نبود ارور پرتاب شود
+				}
+				else {
+					flag = false;//فلاگ برابر فالس شود تا از چرخه خارج شود
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setday(day);
+	flag = true;// بعد قرار بگیردwhile فلاگ برابر ترو شود تا بتواند درون 
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "month:" << endl;
+				cin >> month;
+				if (month > 12 || month < 0) {
+					throw wrongdate("wrong month");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setmonth(month);
+
+	cout << "year:" << endl;
+	cin >> year;
+	today.setyear(year);
+	for (int i = 0; i < getbookstudent.size(); i++) {
+		
+		sum = 0;
+		if (id == getbookstudent[i].getpersonid() && compare(today, getbookstudent[i].getgetbackdate()) == -1) {//اگر روز امروز بیشتر از تاریخ برگرداندن باشد جریمه حساب شود
+
+			gb = getbookstudent[i].getgetbackdate();//ریخته می شود تا مقایسه شودgh تاریخ برگرداندن درون   
+			if (gb.getmonth() <= 6) {// برای ماه های کمتر از 6زمان برگرداندن
+				if(today.getmonth() <=6){//ماه امروز که کمتر از 6 باشد
+				days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);//محاسبه تمام روز ها تا امروز
+				days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);//محاسبه تمام روز ها تا تاریخ برگرداندن
+				ekhtelaf = days1 - days2;//بدست ائردن اختلاف روز ها
+				jarimeh = ekhtelaf * 500;//روزها را در 500 ضرب می شود تا جریمه بدست آید
+				sum = sum + jarimeh;}
+				if (today.getmonth() > 6) {//ماه امروز که بیشتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+					days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+					ekhtelaf = days1 - days2;
+					jarimeh = ekhtelaf * 500;
+					sum = sum + jarimeh;
+				}
+
+			}
+			if (gb.getmonth() > 6) {// برای ماه های بیشتر از 6زمان برگرداندن
+				if (today.getmonth() <= 6) {//ماه امروز که کمتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+					days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+					ekhtelaf = days1 - days2;
+					jarimeh = ekhtelaf * 500;
+					sum = sum + jarimeh;
+					
+				}
+				if (today.getmonth() > 6) {//ماه امروز که بیشتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+					days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+					ekhtelaf = days1 - days2;
+					jarimeh = ekhtelaf * 500;
+					sum = sum + jarimeh;
+				}
+
+			}
+			getbookstudent[i].setpunishment(sum);
+		}
+		if (compare(today, getbookstudent[i].getgetbackdate()) == 0) {//اگر فرد دقیقا سر وقت کتاب را برگرداندن
+			getbookstudent[i].setpunishment(0);
+		}
+	}
+	
+
+}
+void borrow::calcutepunishmentpersonel(int id) {
+	//محاسبه کردن جریمه برای پرسونل ها
+	int  day, month, year, sum=0, jarimeh, days1, days2, ekhtelaf, allcheck = 1, sumall=0;
+	date today, gb;
+	bool flag=true;
+	cout << "enter date of today:" << endl;
+
+	while (flag) {//کاربر تا 10 بار می تواند روزی درست بین اعداد 0تا 31 بنویسد
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "enter today date:" << endl;
+				cout << "day:" << endl;
+				cin >> day;
+				if (day> 30 || day< 0) {
+					throw wrongdate("wrong day");//اگر روز بین 0تا 31 نبود ارور پرتاب شود
+				}
+				else {
+					flag = false;//فلاگ برابر فالس شود تا از چرخه خارج شود
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setday(day);
+	flag = true;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "month:" << endl;
+				cin >> month;
+				if (month > 12 || month < 0) {
+					throw wrongdate("wrong month");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setmonth(month);
+	
+	cout << "year:" << endl;
+	cin >> year;
+
+	today.setyear(year);
+	for (int i = 0; i < getbookpersonel.size(); i++) {
+		sum = 0;
+		if (id == getbookpersonel[i].getpersonid() && compare(today, getbookpersonel[i].getgetbackdate()) == -1) {//اگر روز امروز بیشتر از تاریخ برگرداندن باشد جریمه حساب شود
+			
+			gb = getbookpersonel[i].getgetbackdate();//ریخته می شود تا مقایسه شودgh تاریخ برگرداندن درون
+			if (gb.getmonth() <= 6) {// برای ماه های کمتر از 6زمان برگرداندن
+				if (today.getmonth() <= 6) {//ماه امروز که کمتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);//محاسبه تمام روز ها تا امروز
+					days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);//محاسبه تمام روز ها تا تاریخ برگرداندن
+					ekhtelaf = days1 - days2;//بدست ائردن اختلاف روز ها
+					jarimeh = ekhtelaf * 500;//روزها را در 500 ضرب می شود تا جریمه بدست آید
+					sum = sum + jarimeh;
+				}
+				if (today.getmonth() > 6) {//ماه امروز که بیشتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);//محاسبه تمام روز ها تا امروز
+					days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);//محاسبه تمام روز ها تا تاریخ برگرداندن
+					ekhtelaf = days1 - days2;//بدست ائردن اختلاف روز ها
+					jarimeh = ekhtelaf * 500;//روزها را در 500 ضرب می شود تا جریمه بدست آید
+					sum = sum + jarimeh;
+				}
+
+			}
+			if (gb.getmonth() > 6) {// برای ماه های بیشتر از 6زمان برگرداندن
+				if (today.getmonth() <= 6) {//ماه امروز که کمتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+					days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+					ekhtelaf = days1 - days2;
+					jarimeh = ekhtelaf * 500;
+					sum = sum + jarimeh;
+				}
+				if (today.getmonth() > 6) {//ماه امروز که بیشتر از 6 باشد
+					days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+					days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+					ekhtelaf = days1 - days2;
+					jarimeh = ekhtelaf * 500;
+					sum = sum + jarimeh;
+				}
+
+			}
+			getbookpersonel[i].setpunishment(sum);
+		}
+		if (compare(today, getbookpersonel[i].getgetbackdate()) == 0) {//اگر فرد دقیقا سر وقت کتاب را برگرداندن
+			getbookpersonel[i].setpunishment(0);
+		}
+	}
+	
+}
+void borrow::getbook(int type,int personid)
+
+{
+	borrow karbar;
+	bool flag = true;
+	int a, bookid, allcheck = 1, personnid, b, number, time, mount = 0, m;
+	char ansewr;
+	date today, getback;
+	date s, f;
+	
+	while(flag){
+	for(int y=0;y<10;y++){
+		try{
+	cout << "enter today date:" << endl;
+	cout << "day:" << endl;
+	cin >> time;
+	if (time > 30 || time < 0) {
+		throw wrongdate("wrong day");
+	}
+	else {
+		flag = false;
+		break;
+	}
+	break;
+		}
+		catch (wrongdate e) {
+			cout<<e.getmassage()<<endl;
+		}
+	}
+	}
+	today.setday(time);
+	flag = true;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "month:" << endl;
+				cin >> time;
+				if (time > 12 || time < 0) {
+					throw wrongdate("wrong month");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setmonth(time);
+	flag = true;
+	cout << "year:" << endl;
+	cin >> time;
+	today.setyear(time);
+	karbar.setgetdate(today);
+	time = today.getday() + 3;// افزایش سه تایی روز های تاریخی که کتاب گرفته شده برای قرار دادن در تاریخی که کتاب باید پس داده شود
+	getback.setday(time);
+	getback.setmonth(today.getmonth());
+	getback.setyear(today.getyear());
+	//مدیریت تاریخ بعد از افزودن سه تایی به تاریخ
+	if (getback.getmonth() <= 6 && getback.getmonth() > 0) {
+		if (getback.getday() > 31) {
+			getback.setmonth(today.getmonth() + 1);
+			time = getback.getday() - 31;
+			getback.setday(time);
+		}
+	}
+
+
+	if (getback.getmonth() < 12 && getback.getmonth() > 6) {
+		if (getback.getday() > 30) {
+			getback.setmonth(today.getmonth() + 1);
+			time = getback.getday() - 30;
+			getback.setday(time);
+		}
+	}
+
+	if (getback.getmonth() == 12 && getback.getday() > 29) {
+		time = getback.getyear() + 1;
+		getback.setyear(time);
+		time = getback.getday() - 29;
+		getback.setday(time);
+		getback.setmonth(1);
+	}
+
+		do {
+			cout << "chose:" << endl;
+			cout << "Enter What you want?" << endl;
+			cout << "1-BOOK" << endl;
+			cout << "2-MAGZINE" << endl;
+			cout << "3-DISSERTATION" << endl;
+			cout << "4-exit" << endl;
+			cin >> a;
+			switch (a)
+			{
+			case(1):
+
+				cout << "enter bookid:" << endl;
+				cin >> bookid;
+				while (flag) {
+					try {
+						for (int i = 0; i < bookuni.size(); i++) {
+							if (bookid == bookuni[i].getid()) {
+								allcheck = 2;
+								if (bookuni[i].getghabelbardasht() > 0) {
+
+									break;
+								}
+								else {
+									allcheck = -1;
+								}
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+
+						}
+						if (allcheck == -1) {
+							throw notfoundexption("we dont have this book now");
+
+						}
+						if(allcheck == 2) {
+							flag = false;
+						}
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+						break;
+					}
+				}
+				flag = true;
+				//گرفتن کتاب توسط دانشجوها
+				if (type == 1) {
+
+					for (int i = 0; i < getbookstudent.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookstudent[i].getpersonid()) {
+							mount++;
+						}
+					}
+					if (mount >= 3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند
+						cout << "You can not have morebook" << endl;
+						cout << "Do you want getback some books?y|n" << endl;
+						cin >> ansewr;
+						if (ansewr == 'y') {
+
+							karbar.returnbook(type,personid);
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن کتاب در صورت وجود ای دی کتاب
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("book");
+						getbookstudent.push_back(karbar);
+					}
+
+				}
+				//گرفتن کتاب توسط پرسنل
+				if (type == 2) {
+
+					for (int i = 0; i < getbookpersonel.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookpersonel[i].getpersonid()) {
+							mount++;
+						}
+					}
+					if (mount >= 3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند 
+						cout << "You can not have morebook" << endl;
+						cout << "Do you want getback some books?y|n" << endl;
+						cin >> ansewr;
+						if (ansewr == 'y') {
+
+							karbar.returnbook(type,personid);
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن کتاب در صورت وجود ای دی دانشجو
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("book");
+						getbookpersonel.push_back(karbar);
+					}
+
+				}
+				if (allcheck == 2&& mount<3) {//کم کردن تعداد کتاب با ایدی مشخص شده که می توان قرض گرفت در صورت وجود ای دی کتاب
+					for (int u = 0; u < bookuni.size(); u++) {
+						if (bookid == bookuni[u].getid()) {
+							if (bookuni[u].getghabelbardasht() > 0) {
+								number = bookuni[u].getghabelbardasht();
+								number -= 1;
+								bookuni[u].setghabelbardasht(number);
+								break;
+							}
+						}
+					}
+
+				}
+				mount = 0;
+				break;
+			case(2):
+				allcheck = 1;
+				cout << "enter magzine id:" << endl;
+				cin >> bookid;
+				while (flag) {
+					try {
+						for (int i = 0; i < magzineuni.size(); i++) {
+							if (bookid == magzineuni[i].getid()) {
+								allcheck = 2;
+								if (magzineuni[i].getghabelbardasht() > 0) {
+
+									break;
+								}
+								else {
+									allcheck = -1;
+								}
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+
+						}
+						if (allcheck == -1) {
+							throw notfoundexption("we dont have this book now");
+
+						}
+						if (allcheck ==2) {
+							flag = false;
+						}
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+						break;
+					}
+				}
+				flag = true;
+				//قرض گرفتن مجله توسط دانشجو
+				if (type == 1) {
+					for (int i = 0; i < getbookstudent.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookstudent[i].getpersonid()) {
+							mount++;
+						}
+						if (mount >= 3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند
+							cout << "You can not have morebook" << endl;
+							cout << "Do you want getback some books?y|n" << endl;
+							cin >> ansewr;
+							if (ansewr == 'y')
+								karbar.returnbook(type,personid);
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن مجله برای دانشجو در صورت وجود ای دی مجله
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("magzine");
+						getbookstudent.push_back(karbar);
+					}
+				}
+				//قرض گرفتن مجله توسط پرسنل
+				if (type == 2) {
+					for (int i = 0; i < getbookpersonel.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookpersonel[i].getpersonid()) {
+							mount++;
+						}
+						if (mount >= 3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند
+							cout << "You can not have morebook" << endl;
+							cout << "Do you want getback some books?y|n" << endl;
+							cin >> ansewr;
+							if (ansewr == 'y') {
+								karbar.returnbook(type,personid);
+							}
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن مجله برای پرسنل در صورت وجود ای دی مجله
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("magzine");
+						getbookpersonel.push_back(karbar);
+					}
+				}
+				if (allcheck == 2 && mount<3) {//کم کردن تعداد مجله با ایدی مشخص شده که می توان قرض گرفت در صورت وجود ای دی مجله
+					
+					for (int u = 0; u < magzineuni.size(); u++) {
+						if(bookid== magzineuni[u].getid()){
+						if (magzineuni[u].getghabelbardasht() > 0) {
+							number = magzineuni[u].getghabelbardasht();
+							number -= 1;
+							magzineuni[u].setghabelbardasht(number);
+							break;
+						}
+					}
+					}
+				}
+				mount = 0;
+				
+				break;
+
+			case(3):
+				allcheck = 1;
+				cout << "enter dissertation:" << endl;
+				cin >> bookid;
+				while (flag) {
+					try {
+						for (int i = 0; i < dissertationuni.size(); i++) {
+							if (bookid == dissertationuni[i].getid()) {
+								allcheck = 2;
+								if (dissertationuni[i].getghabelbardasht() != 0) {
+
+									break;
+								}
+								else {
+									allcheck = -1;
+								}
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+
+						}
+						if (allcheck == -1) {
+							throw notfoundexption("we dont have this book now");
+
+						}
+						if (allcheck == 2) {
+							flag = false;
+						}
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+						break;
+					}
+				}
+				flag = true;
+				//قرض گرفتن مقاله توسط دانشجو
+				if (type == 1) {
+					for (int i = 0; i < getbookstudent.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookstudent[i].getpersonid()) {
+							mount++;
+						}
+						if (mount >= 3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند
+							cout << "You can not have morebook" << endl;
+							cout << "Do you want getback some books?y|n" << endl;
+							cin >> ansewr;
+							if (ansewr == 'y') {
+								karbar.returnbook(type,personid);
+							}
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن مقاله برای دانشجو در صورت وجود ای دی مقاله
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("dissertation");
+						getbookstudent.push_back(karbar);
+					}
+				}
+				//قرض گرفتن مقاله توسط پرسنل
+				if (type == 2) {
+					for (int i = 0; i < getbookpersonel.size(); i++) {//اضافه کردن به تعداد نوشتار هایی که توسط یک فرد قرض گرفته شده است
+						if (personid == getbookpersonel[i].getpersonid()) {
+							mount++;
+						}
+						if (mount >=3) {//اگر تعداد نوشتار ها بیشتر از سه تا باشد کابر نتواند نوشتار جدید اضافه کند
+							cout << "You can not have morebook" << endl;
+							cout << "Do you want getback some books?y|n" << endl;
+							cin >> ansewr;
+							if (ansewr == 'y') {
+								karbar.returnbook(type,personid);
+							}
+						}
+					}
+					if (allcheck == 2 && mount<3) {//اضافه کردن مقاله برای پرسنل در صورت وجود ای دی مقاله
+						karbar.setbookid(bookid);
+						karbar.setpersonid(personid);
+						karbar.setgetdate(today);
+						karbar.setgetbackdate(getback);
+						karbar.setname("dissertation");
+						getbookpersonel.push_back(karbar);
+					}
+				}
+				if (allcheck == 2 && mount<3) {//کم کردن تعداد مقاله با ایدی مشخص شده که می توان قرض گرفت در صورت وجود ای دی مقاله
+					for (int u = 0; u < dissertationuni.size(); u++) {
+						if (dissertationuni[u].getghabelbardasht() > 0) {
+							number = dissertationuni[u].getghabelbardasht();
+							number -= 1;
+							dissertationuni[u].setghabelbardasht(number);
+							break;
+						}
+					}
+				}
+				allcheck = 1;
+				mount = 0;
+				break;
+			case(4):
+				break;
+
+			}
+
+		} while (a != 4);
+	}
+void borrow::report() {
+		date today;
+		int year,month,day;
+		bool flag = true;
+		cout << "enter date of today:" << endl;
+
+		while (flag) {
+			for (int y = 0; y<10; y++) {
+				try {
+					cout << "enter today date:" << endl;
+					cout << "day:" << endl;
+					cin >> day;
+					if (day> 30 || day< 0) {
+						throw wrongdate("wrong day");
+					}
+					else {
+						flag = false;
+						break;
+					}
+					break;
+				}
+				catch (wrongdate e) {
+					cout << e.getmassage() << endl;
+				}
+			}
+		}
+		today.setday(day);
+		flag = true;
+		while (flag) {
+			for (int y = 0; y<10; y++) {
+				try {
+					cout << "month:" << endl;
+					cin >> month;
+					if (month > 12 || month < 0) {
+						throw wrongdate("wrong month");
+					}
+					else {
+						flag = false;
+						break;
+					}
+					break;
+				}
+				catch (wrongdate e) {
+					cout << e.getmassage() << endl;
+				}
+			}
+		}
+		today.setmonth(month);
+
+		cout << "enter year:" << endl;
+		cin >> year;
+		today.setyear(year);
+		cout << "student:" << endl;
+		for (int i = 0; i < getbookstudent.size(); i++) {
+			if (compare(getbookstudent[i].getgetdate(),today)!=1 && compare(getbookstudent[i].getgetdate(),today) != -1) {// مقایسه تاریخ با تاریخ وارد شده اگر یکی از دئ تاریخ با هم برابر باشند یا به عبارتی مقدار منفی یک یا یک برگراننده نشود
+				cout << getbookstudent[i].getname() << ":" << getbookstudent[i].getbookid()<< endl;
+				
+			}
+		}
+		cout << "personel:" << endl;
+		for (int i = 0; i < getbookpersonel.size(); i++) {
+			if (compare(getbookpersonel[i].getgetdate(), today) != 1 && compare(getbookpersonel[i].getgetdate(), today) != -1) {// مقایسه تاریخ با تاریخ وارد شده اگر یکی از دئ تاریخ با هم برابر باشند یا به عبارتی مقدار منفی یک یا یک برگراننده نشود
+				cout << getbookpersonel[i].getname() << ":" << getbookpersonel[i].getbookid() << endl;
+
+			}
+		}
+	}
+void borrow::returnbook(int personid,int type)
+{
+	date today, gb;
+	int time, bookid, allcheck = 1, a, number, jarimeh, days1, days2, ekhtelaf;
+	bool flag = true;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "enter today date:" << endl;
+				cout << "day:" << endl;
+				cin >> time;
+				if (time > 30 || time < 0) {
+					throw wrongdate("wrong day");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setday(time);
+	flag = true;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "month:" << endl;
+				cin >> time;
+				if (time > 12 || time < 0) {
+					throw wrongdate("wrong month");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setmonth(time);
+	flag = true;
+	cout << "year:" << endl;
+	cin >> time;
+	today.setyear(time);
+	
+
+	if (type == 1) {
+		try {
+			for (int s = 0; s < getbookstudent.size(); s++) {
+				if (personid == getbookstudent[s].getpersonid()) {
+					cout << "You can enter" << endl;
+					break;
+				}
+				else {
+					allcheck = 0;
+
+				}
+			}
+			if (allcheck == 0) {
+				throw notfoundexption("you cannot enter!");
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+	if (type == 2) {
+		try {
+			for (int s = 0; s < getbookpersonel.size(); s++) {
+				if (personid == getbookpersonel[s].getpersonid()) {
+					cout << "You can enter" << endl;
+					break;
+				}
+				else {
+					allcheck = 0;
+
+				}
+			}
+			if (allcheck == 0) {
+				throw notfoundexption("you cannot enter!");
+			}
+		}
+		catch (notfoundexption e) {
+			cout << e.getmassage();
+		}
+	}
+	do {
+		cout << "chose:" << endl;
+		cout << "You want return?" << endl;
+		cout << "1-BOOK" << endl;
+		cout << "2-MAGZINE" << endl;
+		cout << "3-DISSERTATION" << endl;
+		cout << "4-exit" << endl;
+		cin >> a;
+		switch (a)
+		{
+		case(1):
+			cout << "enter bookid:" << endl;
+			cin >> bookid;
+			while (flag) {
+				try {
+					for (int i = 0; i < bookuni.size(); i++) {
+						if (bookid == bookuni[i].getid()) {
+							allcheck = 2;
+							break;
+						}
+
+
+					}
+					
+					if (allcheck == 1) {
+						throw notfoundexption("Not found");
+
+					}
+					
+					else {
+						flag = false;
+					}
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage() << endl;
+					break;
+				}
+			}
+
+			flag = true;
+			//برگرداندن کتاب برای دانشجو
+			if (type == 1) {
+				for (int i = 0; i < getbookstudent.size(); i++) {
+
+					if (personid == getbookstudent[i].getpersonid() && bookid == getbookstudent[i].getbookid()) {
+							if("book" == getbookstudent[i].getname()){
+						if (compare(today, getbookstudent[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+							gb = getbookstudent[i].getgetbackdate();
+							if (gb.getmonth() <= 6) {
+								if(today.getmonth() <= 6){
+								days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+								days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+
+								ekhtelaf = days1 -days2 ;
+								jarimeh = ekhtelaf * 500;
+								cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;}
+							
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+									}
+								
+
+							}
+							if (gb.getmonth() > 6) {
+								if (today.getmonth() <= 6) {
+									days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+									days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+									ekhtelaf = days1 - days2;
+									jarimeh = ekhtelaf * 500;
+									cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+								}
+								if (today.getmonth() > 6) {
+									days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+									days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+									ekhtelaf = days1 - days2;
+									jarimeh = ekhtelaf * 500;
+									cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+								}
+							
+								
+
+							}
+						}
+							for (int s = 0; s < bookuni.size(); s++) {//چون کتاب برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+								if (bookid == bookuni[s].getid()) {
+									number = bookuni[s].getghabelbardasht();
+									number += 1;
+									bookuni[s].setghabelbardasht(number);
+								}
+							}
+						}
+					}
+
+				}
+
+				for (int i = 0; i <getbookstudent.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن کتاب
+					if (bookid == getbookstudent[i].getbookid() && personid == getbookstudent[i].getpersonid()) {
+						continue;
+					}
+					else {
+						getbookstudent2.push_back(getbookstudent[i]);
+					}
+				}
+				getbookstudent = getbookstudent2;
+				getbookstudent2.clear();
+			}
+			//برگرداندن کتاب برای پرسنل
+			if (type == 2) {
+				for (int i = 0; i < getbookpersonel.size(); i++) {
+
+					if (personid == getbookpersonel[i].getpersonid() && bookid == getbookpersonel[i].getbookid()) {
+						if ("book" == getbookpersonel[i].getname()) {
+
+							if (compare(today, getbookpersonel[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+								gb = getbookpersonel[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+
+								}
+							}
+							for (int s = 0; s < bookuni.size(); s++) {//چون کتاب برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+								if (bookid == bookuni[s].getid()) {
+									number = bookuni[s].getghabelbardasht();
+									number += 1;
+									bookuni[s].setghabelbardasht(number);
+								}
+							}
+						}
+					}
+
+				}
+
+				for (int i = 0; i <getbookpersonel.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن کتاب
+					if (bookid == getbookpersonel[i].getbookid() && personid == getbookpersonel[i].getpersonid()) {
+						continue;
+					}
+					else {
+						getbookpersonel2.push_back(getbookpersonel[i]);
+					}
+				}
+				getbookpersonel = getbookpersonel2;
+				getbookpersonel2.clear();
+			}
+			allcheck = 1;
+			break;
+		case(2):
+			cout << "enter magzineid:" << endl;
+			cin >> bookid;
+			while (flag) {
+				try {
+					for (int i = 0; i < magzineuni.size(); i++) {
+						if (bookid == magzineuni[i].getid()) {
+							allcheck = 2;
+							break;
+						}
+
+
+					}
+
+					if (allcheck == 1) {
+						throw notfoundexption("Not found");
+
+					}
+
+					else {
+						flag = false;
+					}
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage() << endl;
+					break;
+				}
+			}
+
+			flag = true;
+			//برگرداندن مجله برای دانشجو
+			if (type == 1) {
+				for (int i = 0; i < getbookstudent.size(); i++) {
+
+					if (personid == getbookstudent[i].getpersonid() && bookid == getbookstudent[i].getbookid()) {
+
+						if ("magzine" == getbookstudent[i].getname()) {
+							if (compare(today, getbookstudent[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+								gb = getbookstudent[i].getgetbackdate();
+
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+
+								}
+								if (gb.getmonth() > 6) {
+
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+
+								}
+							}
+							for (int s = 0; s < magzineuni.size(); s++) {//چون مجله برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+								if (bookid == magzineuni[s].getid()) {
+									number = magzineuni[s].getghabelbardasht();
+									number += 1;
+									magzineuni[s].setghabelbardasht(number);
+								}
+							}
+						}
+					}
+				}
+
+				for (int i = 0; i <getbookstudent.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن مجله
+					if (bookid == getbookstudent[i].getbookid() && personid == getbookstudent[i].getpersonid()) {
+						continue;
+					}
+					else {
+						getbookstudent2.push_back(getbookstudent[i]);
+					}
+				}
+				getbookstudent = getbookstudent2;
+				getbookstudent2.clear();
+			}
+			//برگرداندن مجله برای پرسنل
+			if (type == 2) {
+				for (int i = 0; i < getbookpersonel.size(); i++) {
+
+					if (personid == getbookpersonel[i].getpersonid() && bookid == getbookpersonel[i].getbookid()) {
+						if ("magzine" == getbookpersonel[i].getname()) {
+							if (compare(today, getbookpersonel[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+								gb = getbookpersonel[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+
+								}
+							}
+
+							for (int s = 0; s < magzineuni.size(); s++) {//چون مجله برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+								if (bookid == magzineuni[s].getid()) {
+									number = magzineuni[s].getghabelbardasht();
+									number += 1;
+									magzineuni[s].setghabelbardasht(number);
+								}
+							}
+						}
+					}
+				}
+
+				for (int i = 0; i <getbookpersonel.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن مجله
+					if (bookid == getbookpersonel[i].getbookid() && personid == getbookpersonel[i].getpersonid()) {
+						continue;
+					}
+					else {
+						getbookpersonel2.push_back(getbookpersonel[i]);
+					}
+				}
+				getbookpersonel = getbookpersonel2;
+				getbookpersonel2.clear();
+			}
+			allcheck = 1;
+			break;
+		case(3):
+			cout << "enter dissertation:" << endl;
+			cin >> bookid;
+			while (flag) {
+				try {
+					for (int i = 0; i < dissertationuni.size(); i++) {
+						if (bookid == dissertationuni[i].getid()) {
+							allcheck = 2;
+							break;
+						}
+
+
+					}
+
+					if (allcheck == 1) {
+						throw notfoundexption("Not found");
+
+					}
+
+					else {
+						flag = false;
+					}
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage() << endl;
+					break;
+				}
+			}
+			flag = true;
+			//برگرداندن مقاله برای دانشجو
+			if (type == 1) {
+				for (int i = 0; i < getbookstudent.size(); i++) {
+
+					if (personid == getbookstudent[i].getpersonid() && bookid == getbookstudent[i].getbookid()) {
+						if ("dissertation" == getbookstudent[i].getname()) {
+							if (compare(today, getbookstudent[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+								gb = getbookstudent[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+								}
+							}
+							for (int s = 0; s < dissertationuni.size(); s++) {//چون مقاله برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+								if (bookid == dissertationuni[s].getid()) {
+									dissertationuni[s].setghabelbardasht(1);
+								}
+							}
+						}
+					}
+					
+				}
+
+				for (int i = 0; i <getbookstudent.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن مقاله
+					if (bookid == getbookstudent[i].getbookid() && personid == getbookstudent[i].getpersonid()) {
+						continue;
+					}
+					else {
+						getbookstudent2.push_back(getbookstudent[i]);
+					}
+				}
+				getbookstudent = getbookstudent2;
+				getbookstudent2.clear();
+			}
+			//برگرداندن مقاله برای پرسنل
+			if (type == 2) {
+				for (int i = 0; i < getbookpersonel.size(); i++) {
+
+					if (personid == getbookpersonel[i].getpersonid() && bookid == getbookpersonel[i].getbookid()) {
+						if ("dissertation" == getbookpersonel[i].getname()) {
+							if (compare(today, getbookpersonel[i].getgetbackdate()) == -1) {//محاسبه جریمه به روشتی که در تابع های مربوطه توضیح داده شده است
+								gb = getbookpersonel[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+
+									}
+
+								}
+								for (int s = 0; s < dissertationuni.size(); s++) {//چون مقاله برگردانده شده است یکی به تعداد قابل برداشت های مربوطه افزوده می شود
+									if (bookid == dissertationuni[s].getid()) {
+										dissertationuni[s].setghabelbardasht(1);
+									}
+								}
+							}
+						}
+					}
+
+					for (int i = 0; i < getbookpersonel.size(); i++) {//پاک کردن اطلاعات مربوط به قرض گرفتن آن مقاله
+						if (bookid == getbookpersonel[i].getbookid() && personid == getbookpersonel[i].getpersonid()) {
+							continue;
+						}
+						else {
+							getbookpersonel2.push_back(getbookpersonel[i]);
+						}
+					}
+					getbookpersonel = getbookpersonel2;
+					getbookpersonel2.clear();
+				}
+			}
+			allcheck = 1;
+			break;
+		case(4):
+			break;
+		}
+	} while (a != 4);
+
+}
+void borrow::edit() {
+	int type, allcheck = 1, a, jarimeh, number, time, days1, days2, ekhtelaf,personid;
+	date beforedit, edit(0, 0,7),  today, gb;
+	bool flag=true;
+	string f;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "enter today date:" << endl;
+				cout << "day:" << endl;
+				cin >> time;
+				if (time > 30 || time < 0) {
+					throw wrongdate("wrong day");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setday(time);
+	flag = true;
+	while (flag) {
+		for (int y = 0; y<10; y++) {
+			try {
+				cout << "month:" << endl;
+				cin >> time;
+				if (time > 12 || time < 0) {
+					throw wrongdate("wrong month");
+				}
+				else {
+					flag = false;
+					break;
+				}
+				break;
+			}
+			catch (wrongdate e) {
+				cout << e.getmassage() << endl;
+			}
+		}
+	}
+	today.setmonth(time);
+	flag = true;
+	cout << "year:" << endl;
+	cin >> time;
+	today.setyear(time);
+	cout << "Are you student or personel" << endl;
+	cout << "1-student" << endl;
+	cout << "2-personel" << endl;
+	cin >> type;
+
+	if (type == 1) {
+		while (flag) {
+			for (int d = 0; d < 10; d++) {
+				cout << "enter id of person:" << endl;
+				cin >> personid;
+				try {
+					for (int s = 0; s < getbookstudent.size(); s++) {
+						if (personid == getbookstudent[s].getpersonid()) {
+							cout << "You can enter" << endl;
+							allcheck = 2;
+							break;
+						}
+					}
+					if (allcheck == 1) {
+						throw notfoundexption("you cannot enter!");
+					}
+					if (allcheck == 2) {
+					
+						flag = false;
+					}
+					break;
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage() << endl;
+				}
+			}
+		}
+	}
+	flag = true;
+	allcheck = 1;
+	if (type == 2) {
+		while (flag) {
+			for (int d = 0; d < 10; d++) {
+				cout << "enter id of person:" << endl;
+				cin >> personid;
+				try {
+					for (int s = 0; s < getbookpersonel.size(); s++) {
+						if (personid == getbookpersonel[s].getpersonid()) {
+							cout << "You can enter" << endl;
+							allcheck = 2;
+							break;
+						}
+					}
+					if (allcheck == 1) {
+						throw notfoundexption("you cannot enter!");
+					}
+					if (allcheck == 2) {
+						
+						flag = false;
+					}
+					break;
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage()<<endl;
+				}
+			}
+		}
+	}
+	flag = true;
+	allcheck = 1;
+		cout << "chose:" << endl;
+		cout << "You want to edit?" << endl;
+		cout << "1-BOOK" << endl;
+		cout << "2-MAGZINE" << endl;
+		cout << "3-DISSERTATION" << endl;
+		cout << "4-exit" << endl;
+		cin >> a;
+		switch (a)
+		{
+		case(1):
+			while (flag) {
+				for (int d = 0; d < 10; d++) {
+					cout << "enter id of book:" << endl;
+					cin >> bookid;
+					try {
+						for (int i = 0; i < bookuni.size(); i++) {
+
+
+							if (bookid == bookuni[i].getid()) {
+
+								allcheck = 2;
+								break;
+							}
+						}
+
+
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "book";
+							flag = false;
+						}
+						break;
+					}
+
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+					}
+
+				}
+			}
+		
+			flag = true;
+			break;
+		case(2):
+			allcheck = 1;
+			while (flag) {
+				for (int d = 0; d < 10; d++) {
+					try {
+						for (int i = 0; i < magzineuni.size(); i++) {
+							if (bookid == magzineuni[i].getid()) {
+
+								allcheck = 2;
+								break;
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "magzine";
+							flag = false;
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+					}
+				}
+			}
+			flag = true;
+			break;
+		case(3):
+			allcheck = 1;
+			while (flag) {
+				for (int d = 0; d < 10; d++) {
+					cout << "enter id of dissertation:" << endl;
+					cin >> bookid;
+					try {
+						for (int i = 0; i < dissertationuni.size(); i++) {
+
+							if (bookid == dissertationuni[i].getid()) {
+
+								allcheck = 2;
+								break;
+							}
+
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "dissertation";
+							flag = false;
+						}
+						break;
+					}
+
+					catch (notfoundexption e) {
+						cout << e.getmassage();
+					}
+				}
+			}
+			allcheck = 1;
+			break;
+		case(4):
+			break;
+				
+			}
+	
+			if (type == 1) {
+			
+			for (int i = 0; i < getbookstudent.size(); i++) {
+
+				
+					if (f == getbookstudent[i].getname()) {
+					if (personid == getbookstudent[i].getpersonid() && bookid == getbookstudent[i].getbookid()) {
+						
+							if (compare(today, getbookstudent[i].getgetbackdate()) == -1) {//محاسبه جریمه که در تابع مربوطه توضیح داده شده است
+								gb=getbookstudent[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+									}
+
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+									
+									}
+
+									getbookstudent[i].setpunishment(0);
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+
+								
+							}
+							
+							
+							}
+							getbookstudent[i].setgetbackdate(getbookstudent[i].getgetbackdate()+edit);//افزودن 7 تایی روز به تاریخ به گرداندن 
+							break;
+						}
+					}
+				
+			}
+		}
+		if (type == 2) {
+			for (int i = 0; i < getbookpersonel.size(); i++) {
+
+			if (f == getbookpersonel[i].getname()) {
+					if (personid == getbookpersonel[i].getpersonid() && bookid == getbookpersonel[i].getbookid()) {
+						
+							if (compare(today, getbookpersonel[i].getgetbackdate()) == -1) {//محاسبه جریمه که در تابع مربوطه توضیح داده شده است
+								gb = getbookstudent[i].getgetbackdate();
+								if (gb.getmonth() <= 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+									}
+
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 31) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou shoud pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+								}
+								if (gb.getmonth() > 6) {
+									if (today.getmonth() <= 6) {
+										days1 = today.getday() + (today.getmonth() * 31) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+									if (today.getmonth() > 6) {
+										days1 = today.getday() + (today.getmonth() * 30) + (today.getyear() * 365);
+										days2 = gb.getday() + (gb.getmonth() * 30) + (gb.getyear() * 365);
+										ekhtelaf = days1 - days2;
+										jarimeh = ekhtelaf * 500;
+										cout << "At firstyou should pay" << jarimeh << "as punishment" << endl;
+									}
+
+
+
+								}
+							}
+							
+							getbookpersonel[i].setgetbackdate(getbookpersonel[i].getgetbackdate()+ edit);//افزودن 7 تایی روز به تاریخ به گرداندن
+							break;
+					}
+				
+				}
+			}
+		}
+		
+	
+}
+void  borrow::search() {
+	//نشان دادن اطلاعات مربوطه که کاربر می خواهد
+	int type, bookid, chose, personid, allcheck = 1,chose2;
+	bool flag = true;
+	string f;
+	cout << "enter" << endl;
+	cout << "1-jostojo azaei ke ktabi ra gharz greftand :" << endl;
+	cout << "2-jostojo baray ketabhaei ke tavasot yek fard gharz gerefteh shodehand" << endl;
+	cin >> chose;
+	if (chose == 1) {
+		cout << "enter" << endl;
+		cout << "1-ketab" << endl;
+		cout << "2-maghaleh" << endl;
+		cout << "3-majaleh" << endl;
+		cin >> chose2;
+		
+		if (chose2 == 1) {
+			while (flag) {
+				for (int d = 0; d < 10; d++) {
+					cout << "enter id of book:" << endl;
+					cin>> bookid;
+					try {
+						for (int i = 0; i < bookuni.size(); i++) {
+							if (bookid == bookuni[i].getid()) {
+								allcheck = 2;
+								break;
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "book";
+							flag = false;
+						
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+					}
+
+				}
+			}
+		}
+		flag = true;
+		if (chose2 == 2) {
+			while (flag) {
+			for (int d = 0; d < 10; d++) {
+				cout << "enter id of magzine:" << endl;
+				cin >> bookid;
+				try {
+					for (int i = 0; i < magzineuni.size(); i++) {
+						if (bookid == magzineuni[i].getid()) {
+							allcheck = 2;
+							
+							break;
+						}
+
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "magzine";
+							flag = false;
+						}
+					}
+					break;
+				}
+				catch (notfoundexption e) {
+					cout << e.getmassage()<<endl;
+				}
+			}
+		}
+		}
+		flag = true;
+		if (chose2 == 3) {
+			while (flag) {
+				for (int d = 0; d < 10; d++) {
+					cout << "enter id of dissertation:" << endl;
+					cin >> bookid;
+					try {
+						for (int i = 0; i < dissertationuni.size(); i++) {
+							if (bookid == dissertationuni[i].getid()) {
+								allcheck = 2;
+								
+								break;
+							}
+
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							f = "dissertation";
+							flag = false;
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage()<<endl;
+					}
+				}
+			}
+		}
+		flag = true;
+		cout << "az personel:" << endl;//اگر ایدی نوشتار با ایدی دورن خانه ها برابر بود و آن نوشتار کتاب بود نشان داده شود
+		for (int i = 0; i < getbookpersonel.size(); i++) {
+			if (bookid == getbookpersonel[i].getbookid() && f == getbookpersonel[i].getname()) {
+				cout << getbookpersonel[i].getpersonid() << endl;
+			}
+		}
+		cout << "az daneshjoha:" << endl;
+		for (int i = 0; i < getbookstudent.size(); i++) {//اگر ایدی نوشتار با ایدی دورن خانه ها برابر بود و آن نوشتار کتاب بود نشان داده شود
+			if (bookid == getbookstudent[i].getbookid()&&f== getbookstudent[i].getname()) {
+				cout << getbookstudent[i].getpersonid() << endl;
+			}
+		
+	}
+	}
+	if (chose == 2) {
+		cout << "daneshjo ya personel:" << endl;
+		cout << "1-daneshjo" << endl;
+		cout << "2-personel" << endl;
+		cin >> type;
+	
+		if (type == 1) {
+			while (flag) {
+			for (int i = 0; i < 10; i++) {
+				cout << "enter id of person" << endl;
+				cin >> personid;
+
+			
+					try {
+						for (int s = 0; s < studentuni.size(); s++) {
+							if (personid == studentuni[s].getid()) {
+								allcheck = 2;
+								break;
+							}
+							
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 2) {
+							flag = false;
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage()<<endl;
+					}
+				}
+				
+			}
+				for (int i = 0; i < getbookstudent.size(); i++) {//اگر ایدی دانشجو با ایدی فرد آن خانه برابر شد آن نوشتار نشان داده شود
+					if (personid == getbookstudent[i].getpersonid()) {
+						cout << "id of  " << getbookstudent[i].getname() <<"  is:" << getbookstudent[i].getbookid() << endl;
+					}
+				
+			}
+		}
+			flag = true;
+			allcheck = 1;
+			if (type == 2) {
+				while (flag) {
+					for (int i = 0; i < 10; i++) {
+						cout << "enter id of person" << endl;
+						cin >> personid;
+
+
+						try {
+							for (int s = 0; s < personeluni.size(); s++) {
+								if (personid == personeluni[s].getid()) {
+									allcheck = 2;
+									break;
+								}
+
+							}
+							if (allcheck == 1) {
+								throw notfoundexption("Not found");
+							}
+							if (allcheck == 2) {
+								flag = false;
+							}
+							break;
+						}
+						catch (notfoundexption e) {
+							cout << e.getmassage() << endl;
+						}
+					}
+
+				}
+					for (int i = 0; i < getbookpersonel.size(); i++) {//اگر ایدی پرسنل با ایدی فرد آن خانه برابر شد آن نوشتار نشان داده شود
+						if (personid == getbookpersonel[i].getpersonid()) {
+							cout << "id of  " << getbookpersonel[i].getname() << "  is:" <<getbookpersonel[i].getbookid() << endl;
+						}
+					}
+				
+
+			}
+		
+	}
+}
+void borrow::showallinfo(int peronid, int type) {
+	//نشان دادن اطلاعات کامل هم از نظر مدیریت دانشگاه هم کتابخانه
+	date today, getdate, getback, s, f;
+
+
+
+	if (type == 1) {
+		for (int i = 0; i < studentuni.size(); i++) {
+			if (peronid == studentuni[i].getid()) {
+				calcutepunishmentstudent(studentuni[i].getid());
+				cout << "ID" << endl;
+				cout << studentuni[i].getid() << endl;
+				cout << "Firstname" << endl;
+				cout << studentuni[i].getfname() << endl;
+				cout << "lastname" << endl;
+				cout << studentuni[i].getlname() << endl;
+				cout << "nationalcode" << endl;
+				cout << studentuni[i].getnationalcode() << endl;
+				cout << "birthdate" << endl;
+				cout << studentuni[i].getbirthdate() << endl;
+
+				
+			}
+		}
+		for (int i = 0; i < getbookstudent.size(); i++) {
+			if (peronid == getbookstudent[i].getpersonid()) {
+				s = getbookstudent[i].getgetdate();
+				cout << "writingname" << endl;
+				cout << getbookstudent[i].getname() << endl;
+				cout << "writingID" << endl;
+				cout << getbookstudent[i].getbookid() << endl;
+				cout << "Getdate" << endl;
+				cout << s.getyear() << "/" << s.getmonth() << "/" << s.getday() << endl;
+				f = getbookstudent[i].getgetbackdate();
+				cout << "Getbackdate" << endl;
+				cout << f.getyear() << "/" << f.getmonth() << "/" << f.getday() << endl;
+				cout << "punishment" << endl;
+				cout << getbookstudent[i].getpunishment() << endl;
+
+			}
+		}
+	}
+	if (type == 2) {
+		for (int i = 0; i < personeluni.size(); i++) {
+			if (peronid == personeluni[i].getid()) {
+				calcutepunishmentpersonel(personeluni[i].getid());
+				cout << "ID" << endl;
+				cout << personeluni[i].getid() << endl;
+				cout << "Firstname" << endl;
+				cout << personeluni[i].getfname() << endl;
+				cout << "lastname" << endl;
+				cout << personeluni[i].getlname() << endl;
+				cout << "nationalcode" << endl;
+				cout << personeluni[i].getnationalcode() << endl;
+				cout << "birthdate" << endl;
+				cout << personeluni[i].getbirthdate() << endl;
+				
+			}
+		}
+
+		for (int i = 0; i < getbookpersonel.size(); i++) {
+			if (peronid == getbookpersonel[i].getpersonid()) {
+				s = getbookpersonel[i].getgetdate();
+				f = getbookpersonel[i].getgetbackdate();
+				cout << "BOOKID" << endl;
+				cout << getbookpersonel[i].getbookid() << endl;
+				cout << "Getdate" << endl;
+				cout << s.getyear() << "/" << s.getmonth() << "/" << s.getday() << endl;
+				cout << "Getbackdate" << endl;
+				cout << f.getyear() << "/" << f.getmonth() << "/" << f.getday() << endl;
+				cout << "punishment" << endl;
+				cout << getbookpersonel[i].getpunishment() << endl;
+			}
+		}
+	}
+
+}
+
+int main()
+
+{
+	book x;
+	magzine a;
+	dissertation b;
+	personel c;
+	student d;
+	librarian e;
+	borrow stu;
+	borrow per;
+	x.bookreload();
+	a.magzineload();
+	b.dissertationreload();
+	c.reloadpersone();
+	d.reloadstudent();
+	e.reloadlibrarian();
+	stu.reloadgetbookstudent();
+	per.reloadgetbookpersonel();
+	int chose,bookid, chose2, personid, allcheck = 1, type;
+	date f, f1;
+	do {
+
+		cout << "chose one of this:" << endl;
+		cout << "1-BOOK" << endl;
+		cout << "2-MAGZINE" << endl;
+		cout << "3-DISSERTATION" << endl;
+		cout << "4-MEMMBER" << endl;
+		cout << "5-LIBRARIAN" << endl;
+		cout << "6-BORROW" << endl;
+		cout << "7-exit" << endl;
+		cin >> chose;
+		switch (chose)
+		{
+
+		case(1):
+			do {
+				
+				cout << "chose:" << endl;
+				cout << "1-ADD" << endl;
+				cout << "2-EDIT" << endl;
+				cout << "3-DELETE INFORMATION" << endl;
+				cout << "4-SEARCH" << endl;
+				cout << "5-REPORT" << endl;
+				cout << "6-EXIT" << endl;
+				cin >> chose2;
+				switch (chose2)
+				{
+				case(1):
+					x.add();
+					break;
+				case(2):
+					x.edit();
+					break;
+				case(3):
+					cout << "enter id of book:" << endl;
+					cin >> bookid;
+					x.deleteinformation(bookid);
+					break;
+				case(4):
+					x.search();
+					break;
+				case(5):
+					x.report();
+					break;
+				case(6):
+					break;
+
+				}
+				ofstream writebook("bookuni.txt", ios::out);
+			for (int s = 0; s < bookuni.size(); s++) {
+				writebook << endl << bookuni[s].getid() << " ";
+				writebook << bookuni[s].gettitle() << " ";
+				writebook << bookuni[s].gettype() << " ";
+				writebook << bookuni[s].getpagenumber() << " ";
+				writebook << bookuni[s].getnumber() << " ";
+				writebook << bookuni[s].getghabelbardasht() << " ";
+			}
+			writebook.close();
+			} while (chose2 != 6);
+			
+			break;
+		case(2):
+			do {
+				
+				cout << "chose:" << endl;
+				cout << "1-ADD" << endl;
+				cout << "2-EDIT" << endl;
+				cout << "3-DELETE INFORMATION" << endl;
+				cout << "4-SEARCH" << endl;
+				cout << "5-REPORT" << endl;
+				cout << "6-EXIT" << endl;
+				cin >> chose2;
+				switch (chose2)
+				{
+				case(1):
+					a.add();
+					break;
+				case(2):
+					a.edit();
+					break;
+				case(3):
+					cout << "enter id of magzine:" << endl;
+					cin >> bookid;
+					a.deleteinformation(bookid);
+					break;
+				case(4):
+					x.search();
+					break;
+				case(5):
+					a.report();
+					break;
+				case(6):
+					break;
+				}
+				ofstream writemagzine("magzine.txt", ios::out);
+				for (int d = 0; d < magzineuni.size(); d++) {
+					writemagzine << endl << magzineuni[d].getid() << " ";
+					writemagzine << magzineuni[d].gettitle() << " ";
+					writemagzine << magzineuni[d].getpagenumber() << " ";
+					writemagzine << magzineuni[d].getnumber() << " ";
+					writemagzine << magzineuni[d].getghabelbardasht() << " ";
+				}
+				writemagzine.close();
+			} while (chose2 != 6); break;
+		case(3):
+			do {
+				
+				cout << "chose:" << endl;
+				cout << "1-ADD" << endl;
+				cout << "2-EDIT" << endl;
+				cout << "3-DELETE INFORMATION" << endl;
+				cout << "4-SEARCH" << endl;
+				cout << "5-REPORT" << endl;
+				cout << "6-EXIT" << endl;
+				cin >> chose2;
+				switch (chose2)
+				{
+				case(1):
+					b.add();
+					break;
+				case(2):
+					b.edit();
+					break;
+				case(3):
+					cout << "enter id of dissertation:" << endl;
+					cin >> bookid;
+					b.deleteinformation(bookid);
+					break;
+				case(4):
+					b.search();
+					break;
+				case(5):
+					b.report();
+					break;
+				case(6):
+					break;
+
+				}
+				ofstream writedissertation("dissertation.txt", ios::out);
+				for (int m = 0; m < dissertationuni.size(); m++) {
+					writedissertation << endl << dissertationuni[m].getid() << " ";
+					writedissertation << dissertationuni[m].gettitle() << " ";
+					writedissertation << dissertationuni[m].getpagenumber() << " ";
+					writedissertation << dissertationuni[m].getlevel() << " ";
+					writedissertation << dissertationuni[m].getcollege() << " ";
+					writedissertation << dissertationuni[m].getgroup() << " ";
+					writedissertation << dissertationuni[m].getghabelbardasht() << " ";
+				}
+				writedissertation.close();
+			} while (chose2 != 6);
+			break;
+		case(4):do {
+			cout << "chose:" << endl;
+			cout << "1-student" << endl;
+			cout << "2-personel" << endl;
+			cout << "3-exit" << endl;
+			cin >> chose2;
+
+			switch (chose2)
+			{
+			case(1):
+				do {
+					
+					cout << "chose:" << endl;
+					cout << "1-ADD" << endl;
+					cout << "2-EDIT" << endl;
+					cout << "3-DELETE INFORMATION" << endl;
+					cout << "4-SEARCH" << endl;
+					cout << "5-REPORT" << endl;
+					cout << "6-EXIT" << endl;
+					cin >> chose2;
+					switch (chose2)
+					{
+					case(1):
+						d.add();
+						break;
+					case(2):
+						d.edit();
+						break;
+					case(3):
+						cout << "enter id of student:" << endl;
+						cin >> personid;
+						d.deleteinformation(personid);
+						break;
+					case(4):
+						d.search();
+						break;
+					case(5):
+						d.report();
+						break;
+					case(6):
+						break;
+
+					}
+					ofstream writestudent("student.txt", ios::out);
+					for (int n = 0; n < studentuni.size(); n++) {
+						writestudent << endl << studentuni[n].getid() << " ";
+						writestudent << studentuni[n].gettype() << " ";
+						writestudent << studentuni[n].getfname() << " ";
+						writestudent << studentuni[n].getlname() << " ";
+						writestudent << studentuni[n].getnationalcode() << " ";
+						writestudent << studentuni[n].getbirthdate() << " ";
+					}
+					writestudent.close();
+				} while (chose2 != 6);
+				break;
+			case(2):
+				do {
+					
+					cout << "chose:" << endl;
+					cout << "1-ADD" << endl;
+					cout << "2-EDIT" << endl;
+					cout << "3-DELETE INFORMATION" << endl;
+					cout << "4-SEARCH" << endl;
+					cout << "5-REPORT" << endl;
+					cout << "6-EXIT" << endl;
+					cin >> chose2;
+					switch (chose2)
+					{
+					case(1):
+						c.add();
+						break;
+					case(2):
+						c.edit();
+						break;
+					case(3):
+						cout << "enter id of personel:" << endl;
+						cin >> personid;
+						c.deleteinformation(personid);
+						break;
+					case(4):
+						c.search();
+						break;
+					case(5):
+						c.report();
+						break;
+					case(6):
+						break;
+
+					}
+					ofstream writepersonel("personel.txt", ios::out);
+					for (int k = 0; k < personeluni.size(); k++) {
+						writepersonel << endl << personeluni[k].getid() << " ";
+						writepersonel << personeluni[k].gettype() << " ";
+						writepersonel << personeluni[k].getfname() << " ";
+						writepersonel << personeluni[k].getlname() << " ";
+						writepersonel << personeluni[k].getnationalcode() << " ";
+						writepersonel << personeluni[k].getbirthdate() << " ";
+					}
+					writepersonel.close();
+				} while (chose2 != 6);
+				break;
+			case(3):
+				break;
+			}
+
+		} while (chose2 != 3);
+		break;
+		case(5):
+			do {
+			
+				cout << "chose:" << endl;
+				cout << "1-ADD" << endl;
+				cout << "2-EDIT" << endl;
+				cout << "3-DELETE INFORMATION" << endl;
+				cout << "4-SEARCH" << endl;
+				cout << "5-REPORT" << endl;
+				cout << "6-EXIT" << endl;
+				cin >> chose2;
+				switch (chose2)
+				{
+				case(1):
+					e.add();
+					break;
+				case(2):
+					e.edit();
+					break;
+				case(3):
+					cout << "enter id of librarian:" << endl;
+					cin >> personid;
+					e.deleteinformation(personid);
+					break;
+				case(4):
+					e.search();
+					break;
+				case(5):
+					e.report();
+					break;
+				case(6):
+					break;
+
+				}
+				ofstream writelibrarian("librarian.txt", ios::out);
+				for (int j = 0; j < librarianuni.size(); j++) {
+					writelibrarian << endl << librarianuni[j].getid() << " ";
+					writelibrarian << librarianuni[j].gettype() << " ";
+					writelibrarian << librarianuni[j].getfname() << " ";
+					writelibrarian << librarianuni[j].getlname() << " ";
+					writelibrarian << librarianuni[j].getnationalcode() << " ";
+					writelibrarian << librarianuni[j].getbirthdate() << " ";
+					writelibrarian << librarianuni[j].getdegree() << " ";
+				}
+				writelibrarian.close();
+			} while (chose2 != 6);
+			break;
+		case(6):
+			cout << "ARE you student or personel:" << endl;
+			cout << "1-student" << endl;
+			cout << "2-personel" << endl;
+			cin >> type;
+			if (type == 2) {
+				for (int s = 0; s < 10; s++) {
+					try {
+						cout << "enter personid" << endl;
+						cin >> personid;
+						for (int i = 0; i < personeluni.size(); i++) {
+							if (personid == personeluni[i].getid()) {
+								allcheck = 0;
+								break;
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 0) {
+							break;
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+					}
+
+				}
+				
+			}
+			if (type == 1) {
+				for (int s = 0; s < 10; s++) {
+					try {
+						cout << "enter personid" << endl;
+						cin >> personid;
+						for (int i = 0; i < studentuni.size(); i++) {
+							if (personid == studentuni[i].getid()) {
+								allcheck = 0;
+								break;
+							}
+
+						}
+						if (allcheck == 1) {
+							throw notfoundexption("Not found");
+						}
+						if (allcheck == 0) {
+							break;
+						}
+						break;
+					}
+					catch (notfoundexption e) {
+						cout << e.getmassage() << endl;
+					}
+
+				}
+				ofstream writegetbookstudent("getbookstudent.txt", ios::out);
+				
+			}
+			do {
+				
+				cout << "chose one of this:" << endl;
+				cout << "1-GETBOOK" << endl;
+				cout << "2-Return book" << endl;
+				cout << "3-EDIT" << endl;
+				cout << "4-SEARCH" << endl;
+				cout << "5-SHOW ALL OF INFORMATION ABOUT MEMMBERS" << endl;
+				cout << "6-report" << endl;
+				cout << "7-exit" << endl;
+				cin >> chose2;
+				
+				
+				if(type==1){
+				switch (chose2)
+				{
+				case(1):
+					stu.getbook(type,personid);
+					break;
+				case(2):
+					
+					stu.returnbook(personid,type);
+					break;
+				case(3):
+			
+					stu.edit();
+					break;
+				case(4):
+					stu.search();
+					break;
+				case(5):
+				
+					stu.showallinfo(personid, type);
+					break;
+				case(6):
+					stu.report();
+				case(7):
+					
+					break;
+				}
+				}
+				if (type ==2) {
+					switch (chose2)
+					{
+					case(1):
+						per.getbook(type, personid);
+						break;
+					case(2):
+						
+						per.returnbook(personid,type);
+						break;
+					case(3):
+
+						per.edit();
+						break;
+					case(4):
+						per.search();
+						break;
+					case(5):
+
+						per.showallinfo(personid, type);
+						break;
+					case(6):
+						per.report();
+					case(7):
+						
+						break;
+					}
+				}
+				if (type == 1) {
+					ofstream writegetbookstudent("getbookstudent.txt", ios::out);
+					for (int s = 0; s < getbookstudent.size(); s++) {
+						writegetbookstudent << endl << getbookstudent[s].getpersonid() << " ";
+						writegetbookstudent << getbookstudent[s].getbookid() << " ";
+						writegetbookstudent << getbookstudent[s].getname() << " ";
+						f = getbookstudent[s].getgetdate();
+						writegetbookstudent << f.getyear() << " " << f.getmonth() << " " << f.getday() << " ";
+						f1 = getbookstudent[s].getgetbackdate();
+						writegetbookstudent << f1.getyear() << " " << f1.getmonth() << " " << f1.getday() << " ";
+						writegetbookstudent << getbookstudent[s].getpunishment() << " ";
+
+					}
+					writegetbookstudent.close();
+					}
+				if (type == 2) {
+					ofstream writegetbookpersonel("getbookpersonel.txt", ios::out);
+					for (int p = 0; p < getbookpersonel.size(); p++) {
+						writegetbookpersonel << endl << getbookpersonel[p].getpersonid() << " ";
+						writegetbookpersonel << getbookpersonel[p].getbookid() << " ";
+						writegetbookpersonel << getbookpersonel[p].getname() << " ";
+						f = getbookpersonel[p].getgetdate();
+						writegetbookpersonel << f.getyear() << " " << f.getmonth() << " " << f.getday() << " ";
+						f1 = getbookpersonel[p].getgetbackdate();
+						writegetbookpersonel << f1.getyear() << " " << f1.getmonth() << " " << f1.getday() << " ";
+						writegetbookpersonel << getbookpersonel[p].getpunishment() << " ";
+
+					}
+					writegetbookpersonel.close();
+				}
+						
+						
+						ofstream writebook("bookuni.txt", ios::out);
+						for (int s = 0; s < bookuni.size(); s++) {
+							writebook << endl << bookuni[s].getid() << " ";
+							writebook << bookuni[s].gettitle() << " ";
+							writebook << bookuni[s].gettype() << " ";
+							writebook << bookuni[s].getpagenumber() << " ";
+							writebook << bookuni[s].getnumber() << " ";
+							writebook << bookuni[s].getghabelbardasht() << " ";
+						}
+						writebook.close();
+						
+						ofstream writemagzine("magzine.txt", ios::out);
+						for (int d = 0; d < magzineuni.size(); d++) {
+							writemagzine << endl << magzineuni[d].getid() << " ";
+							writemagzine << magzineuni[d].gettitle() << " ";
+							writemagzine << magzineuni[d].getpagenumber() << " ";
+							writemagzine << magzineuni[d].getnumber() << " ";
+							writemagzine << magzineuni[d].getghabelbardasht() << " ";
+						}
+						writemagzine.close();
+						ofstream writedissertation("dissertation.txt", ios::out);
+						for (int m = 0; m < dissertationuni.size(); m++) {
+							writedissertation << endl << dissertationuni[m].getid() << " ";
+							writedissertation << dissertationuni[m].gettitle() << " ";
+							writedissertation << dissertationuni[m].getpagenumber() << " ";
+							writedissertation << dissertationuni[m].getlevel() << " ";
+							writedissertation << dissertationuni[m].getcollege() << " ";
+							writedissertation << dissertationuni[m].getgroup() << " ";
+							writedissertation << dissertationuni[m].getghabelbardasht() << " ";
+						}
+						writedissertation.close();
+
+			} while (chose2 != 7);
+			break;
+		case(7):
+			break;
+		}
+	} while (chose != 7);
+	
+
+
+
+	
+	
+	
+	
+	_getch();
+	return 0;
+}
+
+
+

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="ISO-8859-1">
+  <title>Sign Up - CodeJava</title>
+  <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+  <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<div class="container text-center">
+  <label>email :
+    <input type="text" name="family-name" id="email-delete"/>
+  </label> <br/><br/>
+  <button onclick="buttonGetClick()">Submit</button>
+</div>
+<script>
+  var user;
+  async function buttonGetClick() {
+    var emailChange = document.getElementById('email-delete').value;
+    user = httpGet(emailChange)
+    if (user === "") {
+      alert("User not Found!")
+    } else {
+      user = JSON.parse(user);
+      var status = httpDelete('delete', JSON.stringify(user))
+      if (status === 200) {
+        document.body.innerHTML += '<div class="text-center"><h1>Successfully Deleted!</h1></div>'
+        await new Promise(r => setTimeout(r, 500));
+        window.history.go(-1)
+      } else {
+        document.body.innerHTML += '<div class="text-center"><h1>An error has occurred</h1></div>'
+        window.history.go(-1)
+      }
+    }
+  }
+</script>
+</body>
+</html>

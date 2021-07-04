@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/header.js"></script>
+</head>
+<body>
+<div class="container text-center">
+<button onclick="showAll()">Show</button>
+  <br/><br/>
+
+</div>
+<script>
+  var courseContent;
+  const url = 'all'
+  function buttonGetClick() {
+    var emailChange = document.getElementById('name-update').value;
+    courseContent = httpGet(emailChange)
+    if(courseContent === ""){
+      alert("Course Content not Found!")
+    }else {
+      courseContent = JSON.parse(courseContent);
+      document.getElementById("url").innerHTML = courseContent.url
+      document.getElementById("description").value = courseContent.description
+    }
+  }
+
+  function showAll(){
+      var json = httpGet(url);
+      json = JSON.parse(json);
+      for(var i = 0 ; i < json.length ; i++) {
+          var name = "\'"+ json[i].name +"\'";
+          console.log(name);
+          document.body.innerHTML += '<div class="text-center"> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+      }
+      document.body.innerHTML += '<br/> <br/> <div class="text-center">  <p>Your File Url is :</p><p id="url"></p>\n' +
+          '<input type="file" name="file"/> <br/><br/>\n' +
+          '<label>Description :\n' +
+          '  <input type="text" id="description"/>\n' +
+          '</label> <br/><br/>\n' +
+          '<p>Is this content visible to guests?</p>\n' +
+          '    <br>' +
+          '        <input type="radio" id="yes" name="visible" value="yes"\n' +
+          '               checked>\n' +
+          '        <label for="yes">Yes</label>\n' +
+          '    <br>\n' +
+          '        <input type="radio" id="no" name="visible" value="no"\n' +
+          '               >\n' +
+          '        <label for="no">No</label>\n <br> <br>' +
+          '<button type="submit" onclick="buttonChangeClick()">Submit</button></div>'
+  }
+
+  function aTagClick(name) {
+      var emailChange = name;
+      courseContent = httpGet(emailChange)
+      if (courseContent === "") {
+          alert("Course Content not Found!")
+      } else {
+          courseContent = JSON.parse(courseContent);
+          document.getElementById("url").innerHTML = courseContent.url
+          document.getElementById("description").value = courseContent.description
+          if(courseContent.guestVisible === 1) {
+              document.getElementById("yes").checked = true;
+          } else {
+              document.getElementById("no").checked = true;
+          }
+      }
+  }
+
+      function buttonChangeClick() {
+          courseContent.description = document.getElementById("description").value
+          if(document.getElementById("yes").checked === true) {
+              courseContent.guestVisible = 1;
+          } else {
+              courseContent.guestVisible = 0;
+          }
+          var status = httpPut('edit', JSON.stringify(courseContent))
+          if (status === 200) {
+              document.body.innerHTML += '<div class="text-center"><h1>Successfully Updated!</h1></div>'
+          } else {
+              document.body.innerHTML += '<div class="text-center"><h1>An error has occurred</h1></div>'
+          }
+      }
+
+</script>
+</body>
+</html>
