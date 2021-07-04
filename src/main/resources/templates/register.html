@@ -9,6 +9,26 @@
     <script type="text/javascript" src="/js/header.js"></script>
 </head>
 <body>
+<div>
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+        <a class="navbar-brand" href="/prof" id="navigator">Navbar</a>
+        <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
+            <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
+                <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
+                <div class="media-body">
+                    Hello
+                </div>
+                <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <a class="dropdown-item" href="/user/edit" id="login">Edit Profile</a>
+                <a class="dropdown-item" href="/logout" id="register">Logout</a>
+            </ul>
+        </div>
+    </nav>
+</div>
+<br>
+<br>
 <div class="container text-center">
     <div>
         <h1>User Registration - Sign Up</h1>
@@ -74,9 +94,19 @@
 
     var response = httpGet("/user/profile");
     response = JSON.parse(response)
+    document.getElementById('prof-name').innerHTML = response.name
     console.log(response);
     if(response.role !== 'ROLE_PROF') {
         document.getElementById('role-input').remove()
+    }
+    console.log(response.role);
+    if(response.role === null) {
+        document.getElementById('prof-name').innerHTML = 'Guest'
+        document.getElementById('navigator').href = '/'
+        document.getElementById('login').href = '/login'
+        document.getElementById('register').href = '/user/register'
+        document.getElementById('login').innerHTML = 'Login'
+        document.getElementById('register').innerHTML = 'Register'
     }
 
 </script>

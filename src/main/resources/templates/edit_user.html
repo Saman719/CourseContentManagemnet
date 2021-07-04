@@ -9,7 +9,25 @@
     <script type="text/javascript" src="/js/header.js"></script>
 </head>
 <body>
-<div class="container text-center">
+<div>
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+        <a class="navbar-brand" href="/prof" id="navigator">Navbar</a>
+        <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
+            <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
+                <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
+                <div class="media-body">
+                    Hello
+                </div>
+                <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <a class="dropdown-item" href="/user/edit">Edit Profile</a>
+                <a class="dropdown-item" href="/logout">Logout</a>
+            </ul>
+        </div>
+    </nav>
+</div>
+<div class="container text-center mt-3">
     <div id="search-div">
     <label id="email-change-label">email :
         <input type="text" name="family-name" id="email-change"/>
@@ -37,6 +55,7 @@
 
     var response = httpGet('profile')
     response = JSON.parse(response)
+    document.getElementById('prof-name').innerHTML = response.name
     if(response.role !== 'ROLE_ANONYMOUS') {
         document.getElementById('email').value = response.email;
         document.getElementById('pass').value = response.password;
@@ -45,6 +64,7 @@
     }
     if(response.role !== 'ROLE_PROF') {
         document.getElementById("search-div").remove()
+        document.getElementById('navigator').href = '/student'
     }
 
     var user = response

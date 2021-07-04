@@ -9,14 +9,45 @@
   <script type="text/javascript" src="/js/header.js"></script>
 </head>
 <body>
+<div>
+  <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+    <a class="navbar-brand" href="/prof">Navbar</a>
+    <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
+      <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
+        <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
+        <div class="media-body">
+          Hello
+        </div>
+        <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-right" role="menu">
+        <a class="dropdown-item" href="/user/edit">Edit Profile</a>
+        <a class="dropdown-item" href="/logout">Logout</a>
+      </ul>
+    </div>
+  </nav>
+</div>
+<div id="container" class="text-center d-flex flex-column align-items-center mt-5" style="height: 500px">
 <script>
+  var response = httpGet("/user/profile");
+  response = JSON.parse(response)
+  document.getElementById('prof-name').innerHTML = response.name
   const url = 'all'
   var json = httpGet(url);
   json = JSON.parse(json);
   for(var i = 0 ; i < json.length ; i++) {
     var name = "\'"+ json[i].name +"\'";
     console.log(name);
-    document.body.innerHTML += '<div class="text-center"> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+    var card = '<div class="card" style="width: 18rem;">\n' +
+            '        <div class="card-body">\n' +
+            '            <h5 class="card-title">'+ json[i].description +'</h5>\n' +
+            '            <p class="card-text">'+ json[i].name +'</p>\n' +
+            '            <a href="#description" class="btn btn-primary" onclick="aTagClick(' +name+ ')">Delete</a>\n' +
+            '        </div>\n' +
+            '    </div>'+
+            '<br><br>'
+    // document.body.innerHTML += '<div> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+    document.getElementById('container').innerHTML += card
   }
   var courseContent;
   function aTagClick(name) {
@@ -28,9 +59,9 @@
       courseContent = JSON.parse(courseContent);
       var status = httpDelete('delete',JSON.stringify(courseContent))
       if(status === 200) {
-        document.body.innerHTML += '<div class="text-center"><h1>Successfully Deleted!</h1></div>'
+        location.reload()
       }else {
-        document.body.innerHTML += '<div class="text-center"><h1>An error has occurred</h1></div>'
+        document.getElementById('container').innerHTML += '<div class="text-center"><h1>An error has occurred</h1></div>'
       }
     }
   }
