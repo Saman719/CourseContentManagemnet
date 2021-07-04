@@ -2,29 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Student</title>
+    <title>Professor</title>
     <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
     <script type="text/javascript" src="/webjars/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/header.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-expand-xl navbar-dark bg-dark pmd-navbar pmd-z-depth fixed-top">
-    <a class="navbar-brand" href="#">Navbar</a>
-    <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
-        <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
-            <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
-            <div class="media-body">
-                Hello
-            </div>
-            <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-right" role="menu">
-            <a class="dropdown-item" href="user/edit">Edit Profile</a>
-            <a class="dropdown-item" href="/logout">Logout</a>
-        </ul>
+<div>
+    <nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+        <a class="navbar-brand" href="/student">Navbar</a>
+        <div class="dropdown pmd-dropdown pmd-user-info ml-auto">
+            <a href="javascript:void(0);" class="btn-user dropdown-toggle media align-items-center" data-toggle="dropdown" data-sidebar="true" aria-expanded="false">
+                <!--            <img class="mr-2" src="https://pro.propeller.in/assets/images/avatar-icon-40x40.png" width="40" height="40" alt="avatar">-->
+                <div class="media-body">
+                    Hello
+                </div>
+                <i class="material-icons md-light ml-2 pmd-sm" id="prof-name">more_vert</i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <a class="dropdown-item" href="/user/edit">Edit Profile</a>
+                <a class="dropdown-item" href="/logout">Logout</a>
+            </ul>
+        </div>
+    </nav>
+</div>
+<div class="text-center d-flex flex-column align-items-center mt-5" style="height: 500px">
+
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">View Course Content</h5>
+            <p class="card-text">View the contents that professor setup for you</p>
+            <a href="/course-content" class="btn btn-primary">View</a>
+        </div>
     </div>
-</nav>
+    <br>
+    <br>
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Manage your profile</h5>
+            <p class="card-text">Manage your profile, and edit your profile</p>
+            <a href="/user/edit" class="btn btn-primary">Manage</a>
+        </div>
+    </div>
+
+
+</div>
 
 <script>
     var response = httpGet("/user/profile");

@@ -9,21 +9,30 @@
     <script type="text/javascript" src="/js/header.js"></script>
 </head>
 <body>
-<button onclick="showAll()">Click Me!</button>
+<div id="container" class="text-center d-flex flex-column align-items-center mt-5" style="height: 500px">
+
+</div>
 <script>
 
   const url = 'course-content/all'
-  function showAll(){
     var json = httpGet(url);
     json = JSON.parse(json);
       console.log(name);
       for(var i = 0 ; i < json.length ; i++) {
           var name = "\'"+ json[i].name +"\'";
           console.log(name);
-          document.body.innerHTML += '<div> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+          var card = '<div class="card" style="width: 18rem;">\n' +
+              '        <div class="card-body">\n' +
+              '            <h5 class="card-title">'+ json[i].description +'</h5>\n' +
+              '            <p class="card-text">'+ json[i].name +'</p>\n' +
+              '            <a href="/course-content" class="btn btn-primary" onclick="aTagClick(' +name+ ')">Download</a>\n' +
+              '        </div>\n' +
+              '    </div>'+
+              '<br><br>'
+          // document.body.innerHTML += '<div> <a href="#" onclick="aTagClick(' +name+ ')" > '+ json[i].id + '   --- ' + json[i].description + ' </a></div>'
+          document.getElementById('container').innerHTML += card
     }
       console.log(document.body.innerHTML);
-  }
 
   function aTagClick(name) {
       console.log(name)

@@ -20,9 +20,6 @@ public class UserController {
     @PostMapping("/user")
     @ResponseBody
     public ModelAndView addUser(User user){
-        if(user.getRole() == null) {
-            user.setRole("ROLE_STU");
-        }
         userService.addUser(user);
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("homepage");
@@ -32,9 +29,7 @@ public class UserController {
 
     @GetMapping("/user")
     public List<User> showUsers(){
-        List<User> actualList = new ArrayList<>();
-        userService.getAllUsers().forEach(actualList::add);
-        return actualList;
+        return userService.getAllUsers();
     }
 
     @GetMapping("/user/{email}")
@@ -54,12 +49,6 @@ public class UserController {
 
     @GetMapping("/user/profile")
     public User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        User user = userService.getUserByEmail(email);
-        if(user == null) {
-            user = new User();
-        }
-        return user;
+        return userService.getCurrentUser();
     }
 }
