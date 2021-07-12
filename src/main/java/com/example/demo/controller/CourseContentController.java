@@ -60,5 +60,17 @@ public class CourseContentController {
         fileService.deleteFile(courseContent.getUrl());
     }
 
+    @PostMapping("/test")
+    public String uploadFile(@RequestParam("file") MultipartFile file) {
+        fileService.uploadFile(file);
+        return "Uploaded!";
+    }
+
+    @GetMapping("/test")
+    public String printHello(){
+        System.out.println("Get Method Ran");
+        return "Received";
+    }
+
 
 }

@@ -13,7 +13,7 @@ import static java.nio.file.StandardCopyOption.*;
 @Service
 public class FileService {
 
-    private final String uploadDir = System.getProperty("user.dir").concat("\\files");
+    private final String uploadDir = "D:\\uploads";
 
     private final String downloadDir = System.getProperty("user.dir").concat("\\files\\userFiles");
 
